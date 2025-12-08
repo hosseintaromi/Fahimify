@@ -65,3 +65,5 @@ export default function ActivityRings({ rings, size = 220 }: ActivityRingsProps)
   )
 }
 
+
+
