@@ -3,13 +3,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import BudgetSlider from "@/components/budget-slider"
-import HouseholdPicker from "@/components/household-picker"
 import AllergiesInput from "@/components/allergies-input"
 import CookingTimeSlider from "@/components/cooking-time-slider"
 
 export default function OnboardingForm() {
   const [budget, setBudget] = useState(300)
-  const [household, setHousehold] = useState(2)
   const [allergies, setAllergies] = useState<string[]>([])
   const [cookingTime, setCookingTime] = useState(30)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -18,7 +16,6 @@ export default function OnboardingForm() {
     setIsSubmitted(true)
     console.log({
       budget,
-      household,
       allergies,
       cookingTime,
     })
@@ -39,9 +36,6 @@ export default function OnboardingForm() {
         <div className="space-y-8">
           {/* Budget Slider */}
           <BudgetSlider value={budget} onChange={setBudget} />
-
-          {/* Household Picker */}
-          <HouseholdPicker value={household} onChange={setHousehold} />
 
           {/* Allergies Input */}
           <AllergiesInput value={allergies} onChange={setAllergies} />

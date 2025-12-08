@@ -8,7 +8,7 @@ import type { OnboardingData } from "../onboarding-flow"
 interface NutrientStepProps {
   boostNutrient: boolean
   priorityNutrient: string
-  onComplete: (data: OnboardingData) => void
+  onSubmit: (data: OnboardingData) => Promise<void>
   data: OnboardingData
   onBack: () => void
   step: number
@@ -17,15 +17,15 @@ interface NutrientStepProps {
 export default function NutrientStep({
   boostNutrient,
   priorityNutrient,
-  onComplete,
+  onSubmit,
   data,
   onBack,
 }: NutrientStepProps) {
   const [boost, setBoost] = useState(boostNutrient)
   const [nutrient, setNutrient] = useState(priorityNutrient)
 
-  const handleComplete = () => {
-    onComplete({ ...data, boostNutrient: boost, priorityNutrient: nutrient })
+  const handleComplete = async () => {
+    await onSubmit({ ...data, boostNutrient: boost, priorityNutrient: nutrient })
   }
 
   return (

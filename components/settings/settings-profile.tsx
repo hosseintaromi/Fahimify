@@ -4,7 +4,6 @@ import { useState } from "react"
 import { ArrowLeft, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import BudgetSlider from "@/components/onboarding/inputs/budget-slider"
-import HouseholdPicker from "@/components/onboarding/inputs/household-picker"
 import CookingTimeSlider from "@/components/onboarding/inputs/cooking-time-slider"
 import DietTypeSelect from "@/components/onboarding/inputs/diet-type-select"
 import CuisineSelect from "@/components/onboarding/inputs/cuisine-select"
@@ -19,7 +18,6 @@ interface SettingsProfileProps {
 export default function SettingsProfile({ onBack, onOpenRecipes }: SettingsProfileProps) {
   const [hasChanges, setHasChanges] = useState(false)
   const [budget, setBudget] = useState(150)
-  const [household, setHousehold] = useState(2)
   const [cookingTime, setCookingTime] = useState(30)
   const [allergies, setAllergies] = useState<string[]>(["Peanuts"])
   const [dietType, setDietType] = useState("Omnivore")
@@ -69,21 +67,12 @@ export default function SettingsProfile({ onBack, onOpenRecipes }: SettingsProfi
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Household</p>
-              <h3 className="text-lg font-semibold text-slate-900">Number of people</h3>
-              <div className="mt-4" onChange={trackChange}>
-                <HouseholdPicker value={household} onChange={setHousehold} />
-              </div>
-            </div>
-            <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Timing</p>
-              <h3 className="text-lg font-semibold text-slate-900">Maximum cook time</h3>
-              <p className="text-sm text-slate-500">Tap a tile to update your preferred prep window.</p>
-              <div className="mt-4" onChange={trackChange}>
-                <CookingTimeSlider value={cookingTime} onChange={setCookingTime} />
-              </div>
+          <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Timing</p>
+            <h3 className="text-lg font-semibold text-slate-900">Maximum cook time</h3>
+            <p className="text-sm text-slate-500">Tap a tile to update your preferred prep window.</p>
+            <div className="mt-4" onChange={trackChange}>
+              <CookingTimeSlider value={cookingTime} onChange={setCookingTime} />
             </div>
           </div>
 

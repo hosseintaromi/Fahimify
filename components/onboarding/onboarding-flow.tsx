@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import BudgetStep from "./steps/budget-step"
-import HouseholdStep from "./steps/household-step"
 import AllergiesStep from "./steps/allergies-step"
 import DislikesStep from "./steps/dislikes-step"
 import CookingTimeStep from "./steps/cooking-time-step"
@@ -11,9 +10,8 @@ import CuisineStep from "./steps/cuisine-step"
 import NutrientStep from "./steps/nutrient-step"
 import MealsPerDayStep from "./steps/meals-per-day-step"
 
-interface OnboardingData {
+export interface OnboardingData {
   budget: number
-  household: number
   allergies: string[]
   dislikes: { item: string; priority: number }[]
   cookingTime: number
@@ -31,7 +29,6 @@ interface OnboardingFlowProps {
 
 const STEPS = [
   "budget",
-  "household",
   "allergies",
   "dislikes",
   "cookingTime",
@@ -47,7 +44,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [data, setData] = useState<OnboardingData>({
     budget: 150,
-    household: 2,
     allergies: [],
     dislikes: [],
     cookingTime: 30,
@@ -63,15 +59,23 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const totalSteps = STEPS.length
   const progress = ((currentStepIndex + 1) / totalSteps) * 100
 
-  const handleNext = (fieldName: string, value: any) => {
-    setData((prev) => ({ ...prev, [fieldName]: value }))
-
+  const handleNext = async (fieldName: string, value: any) => {
+    const nextData = { ...data, [fieldName]: value }
+    setData(nextData)
     if (currentStepIndex < STEPS.length - 1) {
       setCurrentStepIndex((prev) => prev + 1)
     } else {
-      // Onboarding complete
-      onComplete(data)
+      await submitOnboarding(nextData)
     }
+  }
+
+  const submitOnboarding = async (payload: OnboardingData) => {
+    await fetch("/api/onboarding", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, userId: "demo-user" }),
+    })
+    onComplete(payload)
   }
 
   const handleBack = () => {
@@ -101,9 +105,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {currentStep === "budget" && (
           <BudgetStep value={data.budget} onNext={handleNext} onBack={handleBack} step={currentStepIndex} />
         )}
-        {currentStep === "household" && (
-          <HouseholdStep value={data.household} onNext={handleNext} onBack={handleBack} step={currentStepIndex} />
-        )}
         {currentStep === "allergies" && (
           <AllergiesStep value={data.allergies} onNext={handleNext} onBack={handleBack} step={currentStepIndex} />
         )}
@@ -132,7 +133,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           <NutrientStep
             boostNutrient={data.boostNutrient}
             priorityNutrient={data.priorityNutrient}
-            onComplete={onComplete}
+            onSubmit={submitOnboarding}
             data={data}
             onBack={handleBack}
             step={currentStepIndex}

@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import BudgetSlider from "./inputs/budget-slider"
-import HouseholdPicker from "./inputs/household-picker"
 import AllergiesInput from "./inputs/allergies-input"
 import CookingTimeSlider from "./inputs/cooking-time-slider"
 
@@ -14,12 +13,11 @@ interface ProfileStepProps {
 
 export default function ProfileStep({ onNext }: ProfileStepProps) {
   const [budget, setBudget] = useState(150)
-  const [household, setHousehold] = useState(2)
   const [allergies, setAllergies] = useState<string[]>([])
   const [cookingTime, setCookingTime] = useState(30)
 
   const handleNext = () => {
-    onNext({ budget, household, allergies, cookingTime })
+    onNext({ budget, allergies, cookingTime })
   }
 
   return (
@@ -40,7 +38,6 @@ export default function ProfileStep({ onNext }: ProfileStepProps) {
         {/* Form Inputs */}
         <div className="space-y-6">
           <BudgetSlider value={budget} onChange={setBudget} />
-          <HouseholdPicker value={household} onChange={setHousehold} />
           <AllergiesInput value={allergies} onChange={setAllergies} />
           <CookingTimeSlider value={cookingTime} onChange={setCookingTime} />
         </div>

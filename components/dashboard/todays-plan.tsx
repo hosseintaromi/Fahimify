@@ -7,10 +7,14 @@ import SwapMealModal from "@/components/modals/swap-meal-modal"
 
 interface TodaysPlanProps {
   onRecipeClick: () => void
+  meals?: { title: string; cookTime: number; price: number; cuisine?: string }[]
 }
 
-export default function TodaysPlan({ onRecipeClick }: TodaysPlanProps) {
+export default function TodaysPlan({ onRecipeClick, meals = [] }: TodaysPlanProps) {
   const [showSwapModal, setShowSwapModal] = useState(false)
+  const breakfast = meals[0]
+  const lunch = meals[1]
+  const dinner = meals[2]
 
   return (
     <div className="space-y-5">
@@ -24,13 +28,13 @@ export default function TodaysPlan({ onRecipeClick }: TodaysPlanProps) {
         </div>
         <div className="mt-4 space-y-2 text-sm">
           <p className="text-slate-600">
-            <span className="font-semibold text-slate-900">Breakfast:</span> Oatmeal with Berries
+            <span className="font-semibold text-slate-900">Breakfast:</span> {breakfast?.title ?? "Pending"}
           </p>
           <p className="text-slate-600">
-            <span className="font-semibold text-slate-900">Lunch:</span> Lentil Soup
+            <span className="font-semibold text-slate-900">Lunch:</span> {lunch?.title ?? "Pending"}
           </p>
           <p className="text-slate-600">
-            <span className="font-semibold text-slate-900">Dinner:</span> Pending...
+            <span className="font-semibold text-slate-900">Dinner:</span> {dinner?.title ?? "Pending"}
           </p>
         </div>
       </div>
@@ -51,24 +55,32 @@ export default function TodaysPlan({ onRecipeClick }: TodaysPlanProps) {
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-teal-500">Dinner suggestion</span>
-              <span className="text-xs text-slate-400">Ready in 45 min</span>
+            <span className="text-xs text-slate-400">
+              {dinner ? `Ready in ${dinner.cookTime} min` : "Ready soon"}
+            </span>
             </div>
-            <h3 className="text-2xl font-semibold text-slate-900">Spicy Chickpea Curry</h3>
-            <p className="text-sm text-slate-500">Fiber-packed curry that hits your magnesium boost goal.</p>
+            <h3 className="text-2xl font-semibold text-slate-900">{dinner?.title ?? "Today’s dinner"}</h3>
+            <p className="text-sm text-slate-500">Smart pick based on your nutrient and budget targets.</p>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-semibold">Indian</span>
-              <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold">High in Iron</span>
+              {dinner?.cuisine && (
+                <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-semibold">
+                  {dinner.cuisine}
+                </span>
+              )}
+              <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold">
+                Balanced pick
+              </span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2 text-slate-500">
               <Clock size={18} />
-              <span>Cook time: 45m</span>
+              <span>Cook time: {dinner ? `${dinner.cookTime}m` : "TBD"}</span>
             </div>
             <div className="flex items-center gap-2 text-slate-500">
               <Euro size={18} />
-              <span>Cost: €2.10</span>
+              <span>Cost: €{dinner ? dinner.price.toFixed(2) : "0.00"}</span>
             </div>
           </div>
 

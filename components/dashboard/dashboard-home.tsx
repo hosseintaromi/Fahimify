@@ -15,72 +15,8 @@ import NourishLabs from "./nourish-labs"
 import UserProfile from "@/components/dashboard/user-profile"
 import SwapMealModal from "@/components/modals/swap-meal-modal"
 import { Button } from "@/components/ui/button"
-
-const WEEKLY_PLAN = [
-  {
-    day: "Monday",
-    focus: "High-iron focus",
-    meals: [
-      { type: "Breakfast", recipe: "Cinnamon Oatmeal", duration: "15m", cost: "€1.20" },
-      { type: "Lunch", recipe: "Mediterranean Salad Bowl", duration: "25m", cost: "€2.90" },
-      { type: "Dinner", recipe: "Spicy Chickpea Curry", duration: "45m", cost: "€2.10" },
-    ],
-  },
-  {
-    day: "Tuesday",
-    focus: "Quick-prep day",
-    meals: [
-      { type: "Breakfast", recipe: "Matcha Chia Pudding", duration: "10m", cost: "€1.40" },
-      { type: "Lunch", recipe: "Lentil Power Wrap", duration: "20m", cost: "€2.20" },
-      { type: "Dinner", recipe: "Herbed Salmon Tray Bake", duration: "30m", cost: "€3.40" },
-    ],
-  },
-  {
-    day: "Wednesday",
-    focus: "Plant protein boost",
-    meals: [
-      { type: "Breakfast", recipe: "Green Smoothie Bowl", duration: "12m", cost: "€1.80" },
-      { type: "Lunch", recipe: "Farro Veggie Bowl", duration: "28m", cost: "€2.60" },
-      { type: "Dinner", recipe: "Miso Glazed Tofu", duration: "35m", cost: "€2.50" },
-    ],
-  },
-  {
-    day: "Thursday",
-    focus: "Comfort classics",
-    meals: [
-      { type: "Breakfast", recipe: "Blueberry Buckwheat Muffins", duration: "18m", cost: "€1.30" },
-      { type: "Lunch", recipe: "Roasted Veggie Sandwich", duration: "22m", cost: "€2.00" },
-      { type: "Dinner", recipe: "Creamy Tuscan Chickpeas", duration: "40m", cost: "€2.80" },
-    ],
-  },
-  {
-    day: "Friday",
-    focus: "Nutrient dense",
-    meals: [
-      { type: "Breakfast", recipe: "Mango Overnight Oats", duration: "8m", cost: "€1.10" },
-      { type: "Lunch", recipe: "Sesame Soba Bowl", duration: "25m", cost: "€2.40" },
-      { type: "Dinner", recipe: "Gochujang Veggie Stir Fry", duration: "30m", cost: "€2.30" },
-    ],
-  },
-  {
-    day: "Saturday",
-    focus: "Batch cooking",
-    meals: [
-      { type: "Breakfast", recipe: "Avocado Toast Stack", duration: "10m", cost: "€1.70" },
-      { type: "Lunch", recipe: "Roasted Tomato Soup", duration: "35m", cost: "€2.10" },
-      { type: "Dinner", recipe: "Thai Coconut Stew", duration: "40m", cost: "€3.00" },
-    ],
-  },
-  {
-    day: "Sunday",
-    focus: "Family favorites",
-    meals: [
-      { type: "Breakfast", recipe: "Baked Apple Pancakes", duration: "30m", cost: "€1.60" },
-      { type: "Lunch", recipe: "Spring Pea Risotto", duration: "35m", cost: "€2.70" },
-      { type: "Dinner", recipe: "Smoky Veggie Paella", duration: "45m", cost: "€3.20" },
-    ],
-  },
-]
+import type { DayPlan, WeeklyPlanResult } from "@/lib/fahimeh"
+import type { UserProfileData } from "@/lib/store"
 
 const TABS = ["home", "plan", "nutrition", "nourish"] as const
 
@@ -92,8 +28,11 @@ export default function DashboardHome() {
   const [showAddRecipe, setShowAddRecipe] = useState(false)
   const [showRecipeDetails, setShowRecipeDetails] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
-  const [expandedDay, setExpandedDay] = useState<string | null>(WEEKLY_PLAN[0].day)
+  const [expandedDay, setExpandedDay] = useState<string | null>(null)
   const [swapTarget, setSwapTarget] = useState<{ day: string; meal: string } | null>(null)
+  const [plan, setPlan] = useState<WeeklyPlanResult | null>(null)
+  const [profile, setProfile] = useState<UserProfileData | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const tabParam = searchParams.get("tab")
@@ -101,6 +40,24 @@ export default function DashboardHome() {
       setCurrentTab(tabParam)
     }
   }, [searchParams, currentTab])
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true)
+      const profRes = await fetch("/api/profile")
+      const prof = (await profRes.json()) as UserProfileData | null
+      setProfile(prof)
+      const planRes = await fetch("/api/plan", { method: "POST", body: JSON.stringify({ userId: "demo-user" }) })
+      const planJson = (await planRes.json()) as WeeklyPlanResult
+      setPlan(planJson)
+      if (planJson?.days?.length) {
+        const name = new Date(2024, 0, 1).toLocaleDateString("en-US", { weekday: "long" })
+        setExpandedDay(name)
+      }
+      setLoading(false)
+    }
+    load()
+  }, [])
 
   const toggleDay = (day: string) => {
     setExpandedDay((prev) => (prev === day ? null : day))
@@ -146,6 +103,28 @@ export default function DashboardHome() {
     )
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground bg-gradient-to-br from-[#dff7ef] via-[#e7f5ff] to-white">
+        Loading your plan...
+      </div>
+    )
+  }
+
+  const weeklyPlan:
+    | { day: string; focus: string; meals: { type: string; recipe: string; duration: string; cost: string }[] }[]
+    | [] =
+    plan?.days?.map((day, idx) => ({
+      day: new Date(2024, 0, 1 + idx).toLocaleDateString("en-US", { weekday: "long" }),
+      focus: profile?.preferences?.boostNutrient ? `${profile.preferences.boostNutrient} focus` : "Balanced day",
+      meals: day.meals.map((meal, mIdx) => ({
+        type: ["Breakfast", "Lunch", "Dinner"][mIdx] ?? "Meal",
+        recipe: meal.title,
+        duration: `${meal.cookTime}m`,
+        cost: `€${meal.price.toFixed(2)}`,
+      })),
+    })) ?? []
+
   if (currentTab === "plan") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#dff7ef] via-[#e7f5ff] to-white pb-20">
@@ -156,7 +135,7 @@ export default function DashboardHome() {
           <p className="text-sm text-slate-500">Tap a day to view meals, swap, or jump into details.</p>
         </div>
         <div className="mx-auto max-w-3xl px-4 space-y-4">
-          {WEEKLY_PLAN.map((day) => {
+          {weeklyPlan.map((day) => {
             const isOpen = expandedDay === day.day
             return (
               <div
@@ -191,9 +170,9 @@ export default function DashboardHome() {
                 </div>
                 {isOpen && (
                   <div className="border-t border-slate-100 p-5 space-y-5">
-                    {day.meals.map((meal) => (
+                    {day.meals.map((meal, idx) => (
                       <div
-                        key={`${day.day}-${meal.type}`}
+                        key={`${day.day}-${meal.type}-${idx}`}
                         className="rounded-3xl border border-white/80 bg-white px-4 py-4 shadow-sm transition hover:-translate-y-0.5"
                       >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -245,8 +224,17 @@ export default function DashboardHome() {
     <div className="min-h-screen bg-background pb-20">
       <DashboardHeader onSettingsClick={() => setShowSettings(true)} onProfileClick={() => setShowProfile(true)} />
       <div className="p-4 space-y-6">
-        <DashboardCards />
-        <TodaysPlan onRecipeClick={() => setShowRecipeDetails(true)} />
+        <DashboardCards
+          budget={profile?.preferences?.budget}
+          spent={plan?.totalCost}
+          priority={profile?.preferences?.boostNutrient}
+        />
+        <TodaysPlan
+          onRecipeClick={() => setShowRecipeDetails(true)}
+          meals={
+            plan?.days?.[0]?.meals?.map((m) => ({ title: m.title, cookTime: m.cookTime, price: m.price })) ?? []
+          }
+        />
         <div className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-lg space-y-4">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Library</p>
