@@ -10,7 +10,6 @@ import {
 import type { RecipeInput } from "./fahimeh";
 
 const ensureSeeded = async () => {
-  if (!process.env.SEED_MOCK) return;
   const counts = await db
     .select({ value: recipeMaster.id })
     .from(recipeMaster)
@@ -108,10 +107,14 @@ export const listRecipes = async (): Promise<RecipeInput[]> => {
 
 export const addRecipe = async (recipe: RecipeInput) => {
   await ensureSeeded();
+  const steps =
+    Array.isArray(recipe.instructions) && recipe.instructions.length
+      ? recipe.instructions.join("\n")
+      : recipe.instructions;
   await db.insert(recipeMaster).values({
     id: recipe.id,
     title: recipe.title,
-    instructions: recipe.instructions,
+    instructions: steps,
     cookTime: recipe.cookTime,
     cuisineCategory: recipe.cuisineCategory,
     sourceType: recipe.sourceType,

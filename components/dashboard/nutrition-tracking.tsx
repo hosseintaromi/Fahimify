@@ -28,116 +28,7 @@ export default function NutritionTracking() {
     to: new Date().toISOString().split("T")[0],
   })
 
-  const nutritionData = {
-    daily: {
-      overall: {
-        priority: { label: "Magnesium", percentage: 80, current: 220, target: 275, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 75, current: 1800, target: 2400, unit: "kcal" },
-          { label: "Protein", percentage: 85, current: 68, target: 80, unit: "g" },
-          { label: "Fat", percentage: 70, current: 56, target: 80, unit: "g" },
-          { label: "Saturated Fat", percentage: 60, current: 18, target: 30, unit: "g" },
-          { label: "Carbs", percentage: 80, current: 200, target: 250, unit: "g" },
-          { label: "Fibre", percentage: 65, current: 13, target: 20, unit: "g" },
-          { label: "Sugar", percentage: 45, current: 27, target: 60, unit: "g" },
-          { label: "Salt", percentage: 70, current: 3.5, target: 5, unit: "g" },
-        ],
-      },
-      breakfast: {
-        priority: { label: "Magnesium", percentage: 25, current: 55, target: 275, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 20, current: 480, target: 2400, unit: "kcal" },
-          { label: "Protein", percentage: 30, current: 24, target: 80, unit: "g" },
-          { label: "Fat", percentage: 25, current: 20, target: 80, unit: "g" },
-          { label: "Saturated Fat", percentage: 20, current: 6, target: 30, unit: "g" },
-          { label: "Carbs", percentage: 28, current: 70, target: 250, unit: "g" },
-          { label: "Fibre", percentage: 40, current: 8, target: 20, unit: "g" },
-          { label: "Sugar", percentage: 35, current: 21, target: 60, unit: "g" },
-          { label: "Salt", percentage: 20, current: 1, target: 5, unit: "g" },
-        ],
-      },
-      lunch: {
-        priority: { label: "Magnesium", percentage: 35, current: 96, target: 275, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 35, current: 840, target: 2400, unit: "kcal" },
-          { label: "Protein", percentage: 40, current: 32, target: 80, unit: "g" },
-          { label: "Fat", percentage: 35, current: 28, target: 80, unit: "g" },
-          { label: "Saturated Fat", percentage: 30, current: 9, target: 30, unit: "g" },
-          { label: "Carbs", percentage: 35, current: 88, target: 250, unit: "g" },
-          { label: "Fibre", percentage: 30, current: 6, target: 20, unit: "g" },
-          { label: "Sugar", percentage: 25, current: 15, target: 60, unit: "g" },
-          { label: "Salt", percentage: 30, current: 1.5, target: 5, unit: "g" },
-        ],
-      },
-      dinner: {
-        priority: { label: "Magnesium", percentage: 20, current: 69, target: 275, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 20, current: 480, target: 2400, unit: "kcal" },
-          { label: "Protein", percentage: 15, current: 12, target: 80, unit: "g" },
-          { label: "Fat", percentage: 10, current: 8, target: 80, unit: "g" },
-          { label: "Saturated Fat", percentage: 10, current: 3, target: 30, unit: "g" },
-          { label: "Carbs", percentage: 17, current: 42, target: 250, unit: "g" },
-          { label: "Fibre", percentage: 20, current: 4, target: 20, unit: "g" },
-          { label: "Sugar", percentage: 15, current: 9, target: 60, unit: "g" },
-          { label: "Salt", percentage: 20, current: 1, target: 5, unit: "g" },
-        ],
-      },
-    },
-    overtime: {
-      overall: {
-        priority: { label: "Magnesium", percentage: 82, current: 1540, target: 1925, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 78, current: 12600, target: 16800, unit: "kcal" },
-          { label: "Protein", percentage: 87, current: 476, target: 560, unit: "g" },
-          { label: "Fat", percentage: 72, current: 392, target: 560, unit: "g" },
-          { label: "Saturated Fat", percentage: 62, current: 126, target: 210, unit: "g" },
-          { label: "Carbs", percentage: 82, current: 1400, target: 1750, unit: "g" },
-          { label: "Fibre", percentage: 68, current: 91, target: 140, unit: "g" },
-          { label: "Sugar", percentage: 48, current: 189, target: 420, unit: "g" },
-          { label: "Salt", percentage: 72, current: 24.5, target: 35, unit: "g" },
-        ],
-      },
-      breakfast: {
-        priority: { label: "Magnesium", percentage: 25, current: 481, target: 1925, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 22, current: 3360, target: 16800, unit: "kcal" },
-          { label: "Protein", percentage: 32, current: 168, target: 560, unit: "g" },
-          { label: "Fat", percentage: 28, current: 140, target: 560, unit: "g" },
-          { label: "Saturated Fat", percentage: 22, current: 42, target: 210, unit: "g" },
-          { label: "Carbs", percentage: 30, current: 490, target: 1750, unit: "g" },
-          { label: "Fibre", percentage: 35, current: 56, target: 140, unit: "g" },
-          { label: "Sugar", percentage: 40, current: 147, target: 420, unit: "g" },
-          { label: "Salt", percentage: 22, current: 7, target: 35, unit: "g" },
-        ],
-      },
-      lunch: {
-        priority: { label: "Magnesium", percentage: 35, current: 672, target: 1925, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 35, current: 5880, target: 16800, unit: "kcal" },
-          { label: "Protein", percentage: 40, current: 224, target: 560, unit: "g" },
-          { label: "Fat", percentage: 35, current: 196, target: 560, unit: "g" },
-          { label: "Saturated Fat", percentage: 30, current: 63, target: 210, unit: "g" },
-          { label: "Carbs", percentage: 38, current: 616, target: 1750, unit: "g" },
-          { label: "Fibre", percentage: 30, current: 42, target: 140, unit: "g" },
-          { label: "Sugar", percentage: 25, current: 105, target: 420, unit: "g" },
-          { label: "Salt", percentage: 35, current: 10.5, target: 35, unit: "g" },
-        ],
-      },
-      dinner: {
-        priority: { label: "Magnesium", percentage: 22, current: 387, target: 1925, unit: "mg" },
-        nutrients: [
-          { label: "Calories", percentage: 21, current: 3360, target: 16800, unit: "kcal" },
-          { label: "Protein", percentage: 15, current: 84, target: 560, unit: "g" },
-          { label: "Fat", percentage: 12, current: 56, target: 560, unit: "g" },
-          { label: "Saturated Fat", percentage: 10, current: 21, target: 210, unit: "g" },
-          { label: "Carbs", percentage: 14, current: 294, target: 1750, unit: "g" },
-          { label: "Fibre", percentage: 20, current: 28, target: 140, unit: "g" },
-          { label: "Sugar", percentage: 12, current: 63, target: 420, unit: "g" },
-          { label: "Salt", percentage: 15, current: 7, target: 35, unit: "g" },
-        ],
-      },
-    },
-  }
+  const hasData = false
 
   const mealFilters: { label: string; value: MealType }[] = [
     { label: "Overall", value: "overall" },
@@ -146,46 +37,28 @@ export default function NutritionTracking() {
     { label: "Dinner", value: "dinner" },
   ]
 
+  if (!hasData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#dff7ef] via-[#e7f5ff] to-white pb-16">
+        <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Fahimify labs</p>
+            <h2 className="text-3xl font-semibold text-slate-900">Nutrition Tracking</h2>
+            <p className="text-sm text-slate-500">No nutrition data yet. Add meals and log intake to see charts here.</p>
+          </div>
+          <div className="rounded-[28px] border border-dashed border-slate-200 bg-white/80 p-6 text-center text-slate-500">
+            Waiting for meal data to calculate macros and micros.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const nutritionData = { daily: {}, overtime: {} } as any
   const dailyData = nutritionData.daily[mealType]
   const overtimeData = nutritionData.overtime[mealType]
 
-  const highlightNutrients: HighlightNutrient[] = [
-    {
-      label: dailyData.priority.label,
-      badge: "Boost",
-      accent: "from-teal-50 via-white to-emerald-50",
-      percentage: dailyData.priority.percentage,
-      current: dailyData.priority.current,
-      target: dailyData.priority.target,
-      unit: dailyData.priority.unit,
-    },
-  ]
-
-  const calories = dailyData.nutrients.find((nutrient) => nutrient.label === "Calories")
-  if (calories) {
-    highlightNutrients.push({
-      label: calories.label,
-      badge: "Energy",
-      accent: "from-sky-50 via-white to-cyan-50",
-      percentage: calories.percentage,
-      current: calories.current,
-      target: calories.target,
-      unit: calories.unit,
-    })
-  }
-
-  const protein = dailyData.nutrients.find((nutrient) => nutrient.label === "Protein")
-  if (protein) {
-    highlightNutrients.push({
-      label: protein.label,
-      badge: "Protein",
-      accent: "from-indigo-50 via-white to-violet-50",
-      percentage: protein.percentage,
-      current: protein.current,
-      target: protein.target,
-      unit: protein.unit,
-    })
-  }
+  const highlightNutrients: HighlightNutrient[] = []
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#dff7ef] via-[#e7f5ff] to-white pb-16">

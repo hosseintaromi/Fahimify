@@ -67,12 +67,12 @@ export default function SettingsProfile({ onBack, onOpenRecipes }: SettingsProfi
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Timing</p>
-            <h3 className="text-lg font-semibold text-slate-900">Maximum cook time</h3>
-            <p className="text-sm text-slate-500">Tap a tile to update your preferred prep window.</p>
-            <div className="mt-4" onChange={trackChange}>
-              <CookingTimeSlider value={cookingTime} onChange={setCookingTime} />
+            <div className="rounded-[28px] border border-white/70 bg-white/90 p-6 shadow">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Timing</p>
+              <h3 className="text-lg font-semibold text-slate-900">Maximum cook time</h3>
+              <p className="text-sm text-slate-500">Tap a tile to update your preferred prep window.</p>
+              <div className="mt-4" onChange={trackChange}>
+                <CookingTimeSlider value={cookingTime} onChange={setCookingTime} />
             </div>
           </div>
 

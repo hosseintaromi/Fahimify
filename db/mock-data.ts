@@ -38,8 +38,10 @@ const baseRecipes = [
     cookTime: 40,
     cuisineCategory: "Indian",
     sourceType: "SYSTEM",
-    imageUrl: "/spicy-chickpea-curry-dish-food-photography.jpg",
-    pricePerServing: 2.5,
+
+    imageUrl:
+      "https://images.unsplash.com/photo-1604908812115-9f85de5d7791?auto=format&fit=crop&w=800&q=80",
+    pricePerServing: 6.5,
     nutrients: {
       calories: 520,
       protein: 18,
@@ -62,8 +64,9 @@ const baseRecipes = [
     cookTime: 25,
     cuisineCategory: "Mediterranean",
     sourceType: "SYSTEM",
-    imageUrl: "/placeholder.jpg",
-    pricePerServing: 2.2,
+    imageUrl:
+      "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=800&q=80",
+    pricePerServing: 7.2,
     nutrients: {
       calories: 480,
       protein: 22,
@@ -81,20 +84,8 @@ const baseRecipes = [
 ];
 
 const generatedRecipes = Array.from({ length: 98 }, (_, idx) => {
-  const n = idx + 3;
-  const price = 1.8 + (idx % 6) * 0.25;
-  const cook = 15 + (idx % 5) * 5;
-  const cal = 420 + (idx % 7) * 30;
-  const protein = 18 + (idx % 6) * 2;
-  const fat = 10 + (idx % 5) * 1.5;
-  const carbs = 55 + (idx % 8) * 5;
-  const iron = 4.5 + (idx % 6) * 0.4;
-  const magnesium = 90 + (idx % 7) * 6;
-  const potassium = 720 + (idx % 9) * 15;
-  const quantityChickpea = 180 + (idx % 5) * 20;
-  const quantityRice = 140 + (idx % 7) * 15;
   const cuisines = [
-    "Persian",
+    "Mediterranean",
     "Italian",
     "Mexican",
     "Thai",
@@ -105,14 +96,52 @@ const generatedRecipes = Array.from({ length: 98 }, (_, idx) => {
     "Greek",
     "Spanish",
   ];
+  const mains = [
+    "Citrus Herb Chicken",
+    "Garlic Butter Shrimp",
+    "Creamy Pesto Pasta",
+    "Chipotle Beef Bowl",
+    "Sesame Ginger Tofu",
+    "Roasted Veggie Quinoa",
+    "Lemon Dill Salmon",
+    "Smoky Chickpea Stew",
+    "Honey Mustard Chicken",
+    "Spicy Beef Tacos",
+    "Teriyaki Salmon Rice Bowl",
+    "Mushroom Spinach Risotto",
+    "Harissa Chicken with Couscous",
+    "Miso Glazed Eggplant",
+    "Cajun Shrimp Orzo",
+    "Zesty Turkey Meatballs",
+    "Mediterranean Lamb Pilaf",
+    "Tomato Basil Gnocchi",
+    "Korean BBQ Chicken",
+    "Thai Peanut Noodles",
+  ];
+  const title = `${mains[idx % mains.length]} (${
+    cuisines[idx % cuisines.length]
+  })`;
+  const price = 7 + (idx % 6) * 0.7;
+  const cook = 18 + (idx % 5) * 5;
+  const cal = 440 + (idx % 7) * 35;
+  const protein = 22 + (idx % 6) * 3;
+  const fat = 12 + (idx % 5) * 1.6;
+  const carbs = 54 + (idx % 8) * 6;
+  const iron = 4.4 + (idx % 6) * 0.45;
+  const magnesium = 98 + (idx % 7) * 7;
+  const potassium = 720 + (idx % 9) * 18;
+  const quantityChickpea = 150 + (idx % 5) * 25;
+  const quantityRice = 150 + (idx % 7) * 18;
   return {
-    id: `rec-auto-${n.toString().padStart(3, "0")}`,
-    title: `Test Meal ${n}`,
-    instructions: "Mix, cook, and serve warm.",
+    id: `rec-auto-${(idx + 3).toString().padStart(3, "0")}`,
+    title,
+    instructions:
+      "Cook base, saute protein with spices, combine and serve hot.",
     cookTime: cook,
     cuisineCategory: cuisines[idx % cuisines.length],
     sourceType: "SYSTEM",
-    imageUrl: "/placeholder.jpg",
+    imageUrl:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
     pricePerServing: Number(price.toFixed(2)),
     nutrients: {
       calories: cal,

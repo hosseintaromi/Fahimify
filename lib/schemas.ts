@@ -21,7 +21,7 @@ export const onboardingSchema = z.object({
 
 export const recipeInputSchema = z.object({
   title: z.string(),
-  instructions: z.string(),
+  instructions: z.union([z.string(), z.array(z.string())]),
   cookTime: z.number(),
   cuisineCategory: z.string(),
   sourceType: z.string(),

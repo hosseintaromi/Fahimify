@@ -70,11 +70,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }
 
   const submitOnboarding = async (payload: OnboardingData) => {
-    await fetch("/api/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...payload, userId: "demo-user" }),
-    })
+      })
     onComplete(payload)
   }
 

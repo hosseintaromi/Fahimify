@@ -15,6 +15,7 @@ export default function TodaysPlan({ onRecipeClick, meals = [] }: TodaysPlanProp
   const breakfast = meals[0]
   const lunch = meals[1]
   const dinner = meals[2]
+  const hasMeals = meals.length > 0
 
   return (
     <div className="space-y-5">
@@ -40,63 +41,72 @@ export default function TodaysPlan({ onRecipeClick, meals = [] }: TodaysPlanProp
       </div>
 
       <div
-        className="rounded-[32px] border border-white/60 bg-white/90 overflow-hidden shadow-[0_25px_60px_rgba(15,118,110,0.12)] transition hover:-translate-y-0.5 cursor-pointer"
-        onClick={onRecipeClick}
+        className={`rounded-[32px] border border-white/60 bg-white/90 overflow-hidden shadow-[0_25px_60px_rgba(15,118,110,0.12)] ${
+          hasMeals ? "transition hover:-translate-y-0.5 cursor-pointer" : ""
+        }`}
+        onClick={hasMeals ? onRecipeClick : undefined}
       >
-        <div className="relative h-44 overflow-hidden">
-          <img
-            src="/spicy-chickpea-curry-dish-food-photography.jpg"
-            alt="Spicy Chickpea Curry"
-            className="w-full h-full object-cover transition duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        </div>
-        <div className="p-5 space-y-4">
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-teal-500">Dinner suggestion</span>
-            <span className="text-xs text-slate-400">
-              {dinner ? `Ready in ${dinner.cookTime} min` : "Ready soon"}
-            </span>
+        {hasMeals ? (
+          <>
+            <div className="relative h-44 overflow-hidden">
+              <img
+                src="/spicy-chickpea-curry-dish-food-photography.jpg"
+                alt={dinner?.title ?? "Dinner"}
+                className="w-full h-full object-cover transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </div>
-            <h3 className="text-2xl font-semibold text-slate-900">{dinner?.title ?? "Today’s dinner"}</h3>
-            <p className="text-sm text-slate-500">Smart pick based on your nutrient and budget targets.</p>
-            <div className="flex gap-2 flex-wrap">
-              {dinner?.cuisine && (
-                <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-semibold">
-                  {dinner.cuisine}
-                </span>
-              )}
-              <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold">
-                Balanced pick
-              </span>
-            </div>
-          </div>
+            <div className="p-5 space-y-4">
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-teal-500">Dinner suggestion</span>
+                  <span className="text-xs text-slate-400">{dinner ? `Ready in ${dinner.cookTime} min` : "Ready soon"}</span>
+                </div>
+                <h3 className="text-2xl font-semibold text-slate-900">{dinner?.title ?? "Today’s dinner"}</h3>
+                <p className="text-sm text-slate-500">Smart pick based on your nutrient and budget targets.</p>
+                <div className="flex gap-2 flex-wrap">
+                  {dinner?.cuisine && (
+                    <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-semibold">
+                      {dinner.cuisine}
+                    </span>
+                  )}
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold">
+                    Balanced pick
+                  </span>
+                </div>
+              </div>
 
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2 text-slate-500">
-              <Clock size={18} />
-              <span>Cook time: {dinner ? `${dinner.cookTime}m` : "TBD"}</span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <Euro size={18} />
-              <span>Cost: €{dinner ? dinner.price.toFixed(2) : "0.00"}</span>
-            </div>
-          </div>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Clock size={18} />
+                  <span>Cook time: {dinner ? `${dinner.cookTime}m` : "TBD"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Euro size={18} />
+                  <span>Cost: €{dinner ? dinner.price.toFixed(2) : "0.00"}</span>
+                </div>
+              </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row" onClick={(e) => e.stopPropagation()}>
-            <Button className="flex-1 rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white font-semibold shadow-lg shadow-teal-500/30 hover:from-teal-600 hover:to-blue-600">
-              Start Cooking
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowSwapModal(true)}
-              className="flex-1 rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-            >
-              Swap Meal
-            </Button>
+              <div className="flex flex-col gap-3 sm:flex-row" onClick={(e) => e.stopPropagation()}>
+                <Button className="flex-1 rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white font-semibold shadow-lg shadow-teal-500/30 hover:from-teal-600 hover:to-blue-600">
+                  Start Cooking
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSwapModal(true)}
+                  className="flex-1 rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                >
+                  Swap Meal
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="p-5 space-y-3 text-center text-slate-500">
+            <p className="text-sm font-semibold text-slate-700">No dinner suggestion yet</p>
+            <p className="text-xs">Add recipes and generate a plan to see dinner details here.</p>
           </div>
-        </div>
+        )}
       </div>
 
       {showSwapModal && <SwapMealModal onClose={() => setShowSwapModal(false)} />}
