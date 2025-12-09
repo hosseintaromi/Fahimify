@@ -1,12 +1,22 @@
 "use server";
 
 import { eq, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { redirect } from "next/navigation";
 import { db } from "@/db/client";
-import { userProfile } from "@/db/schema";
+import { users, userProfile } from "@/db/schema";
 import { calculateBmrHenry, calculateTee } from "@/lib/nutrition";
 import { onboardingSchema } from "@/lib/schemas";
 import { listRecipes as listRecipesDb } from "@/lib/data";
 import { euDrv } from "@/lib/dri";
+import {
+  hashPassword,
+  verifyPassword,
+  generateJWT,
+  setAuthCookie,
+  clearAuthCookie,
+  getCurrentUserFromCookie,
+} from "@/lib/auth";
 
 const defaultDri = { ...euDrv };
 
@@ -14,9 +24,122 @@ const defaultUl = {
   salt: 6,
 };
 
+export async function registerUser(username: string, password: string) {
+  try {
+    if (!username || !password) {
+      return { success: false, error: "Username and password are required" };
+    }
+
+    if (password.length < 6) {
+      return { success: false, error: "Password must be at least 6 characters" };
+    }
+
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (existingUser.length > 0) {
+      return { success: false, error: "Username already exists" };
+    }
+
+    const userId = nanoid();
+    const passwordHash = await hashPassword(password);
+
+    await db.insert(users).values({
+      id: userId,
+      username,
+      passwordHash,
+      hasCompletedOnboarding: false,
+    });
+
+    const token = await generateJWT({ userId, username });
+    await setAuthCookie(token);
+
+    return { success: true, userId };
+  } catch (error) {
+    console.error("Register error:", error);
+    return { success: false, error: "Failed to register user" };
+  }
+}
+
+export async function loginUser(username: string, password: string) {
+  try {
+    if (!username || !password) {
+      return { success: false, error: "Username and password are required" };
+    }
+
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (user.length === 0) {
+      return { success: false, error: "Invalid username or password" };
+    }
+
+    const isValid = await verifyPassword(password, user[0].passwordHash);
+
+    if (!isValid) {
+      return { success: false, error: "Invalid username or password" };
+    }
+
+    const token = await generateJWT({
+      userId: user[0].id,
+      username: user[0].username,
+    });
+    await setAuthCookie(token);
+
+    return {
+      success: true,
+      userId: user[0].id,
+      hasCompletedOnboarding: user[0].hasCompletedOnboarding,
+    };
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, error: "Failed to login" };
+  }
+}
+
+export async function logoutUser() {
+  await clearAuthCookie();
+  redirect("/login");
+}
+
+export async function getCurrentUser() {
+  const payload = await getCurrentUserFromCookie();
+  if (!payload) {
+    return null;
+  }
+
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, payload.userId))
+    .limit(1);
+
+  if (user.length === 0) {
+    return null;
+  }
+
+  return {
+    id: user[0].id,
+    username: user[0].username,
+    hasCompletedOnboarding: user[0].hasCompletedOnboarding,
+  };
+}
+
 export const submitOnboardingData = async (input: unknown) => {
   const parsed = onboardingSchema.parse(input);
-  const userId = parsed.userId ?? "demo-user";
+  
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    throw new Error("User not authenticated");
+  }
+  
+  const userId = currentUser.id;
   const metrics = {
     age: 25,
     sex: "male" as const,
@@ -64,6 +187,12 @@ export const submitOnboardingData = async (input: unknown) => {
         updatedAt: sql`NOW()`,
       },
     });
+  
+  await db
+    .update(users)
+    .set({ hasCompletedOnboarding: true })
+    .where(eq(users.id, userId));
+  
   const recipesAvailable = (await listRecipesDb()).length;
   return { ok: true, nutrientTargets, recipesAvailable };
 };

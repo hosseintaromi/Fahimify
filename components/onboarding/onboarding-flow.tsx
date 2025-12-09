@@ -73,7 +73,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, userId: "demo-user" }),
+      body: JSON.stringify(payload),
       })
     onComplete(payload)
   }

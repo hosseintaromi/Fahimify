@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import OnboardingFlow, { type OnboardingData } from "@/components/onboarding/onboarding-flow"
 import DashboardHome from "@/components/dashboard/dashboard-home"
-import { AUTH_STORAGE_KEY, ONBOARDING_STORAGE_KEY, readClientFlag, writeClientFlag } from "@/lib/storage"
+import { getCurrentUser } from "@/app/actions/user"
 
 export default function Home() {
   const [onboardingComplete, setOnboardingComplete] = useState(false)
@@ -12,19 +12,22 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    const isAuthenticated = readClientFlag(AUTH_STORAGE_KEY) === "true"
-    if (!isAuthenticated) {
-      router.replace("/login")
-      return
+    const checkAuth = async () => {
+      const user = await getCurrentUser()
+      
+      if (!user) {
+        router.replace("/login")
+        return
+      }
+
+      setOnboardingComplete(user.hasCompletedOnboarding)
+      setIsCheckingSession(false)
     }
 
-    const hasOnboarded = readClientFlag(ONBOARDING_STORAGE_KEY) === "true"
-    setOnboardingComplete(hasOnboarded)
-    setIsCheckingSession(false)
+    checkAuth()
   }, [router])
 
   const handleOnboardingComplete: (data: OnboardingData) => void = () => {
-    writeClientFlag(ONBOARDING_STORAGE_KEY, "true")
     setOnboardingComplete(true)
   }
 

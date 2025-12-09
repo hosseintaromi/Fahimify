@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { AUTH_STORAGE_KEY, readClientFlag } from "@/lib/storage"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import UserList from "@/components/admin/user-list"
 
 type Snapshot = {
     users: any[]
@@ -57,11 +58,6 @@ export default function AdminPage() {
     const [success, setSuccess] = useState<string | null>(null)
 
     useEffect(() => {
-        const auth = readClientFlag(AUTH_STORAGE_KEY) === "true"
-        if (!auth) {
-            router.replace("/login")
-            return
-        }
         const load = async () => {
             const res = await fetch("/api/admin/snapshot")
             const json = (await res.json()) as Snapshot
@@ -69,7 +65,7 @@ export default function AdminPage() {
             setLoading(false)
         }
         load()
-    }, [router])
+    }, [])
 
     useEffect(() => {
         if (data?.ingredients?.length && ingredientsInput[0]?.ingredientId === "") {
@@ -178,7 +174,16 @@ export default function AdminPage() {
                 <h1 className="text-2xl font-semibold">Admin Console</h1>
                 <Button onClick={() => router.push("/")}>Go to app</Button>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            
+            <Tabs defaultValue="overview" className="w-full">
+                <TabsList>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="users">User Management</TabsTrigger>
+                    <TabsTrigger value="recipes">Recipes</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader>
                         <CardTitle>Users</CardTitle>
@@ -242,8 +247,14 @@ export default function AdminPage() {
                     </CardContent>
                 </Card>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card className="md:col-span-2">
+                </TabsContent>
+
+                <TabsContent value="users" className="space-y-6">
+                    <UserList />
+                </TabsContent>
+
+                <TabsContent value="recipes" className="space-y-6">
+                    <Card className="md:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Add Recipe</CardTitle>
                         <div className="text-sm text-muted-foreground">{success ? success : error}</div>
@@ -432,25 +443,8 @@ export default function AdminPage() {
                         </form>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recipes in store</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        {(data?.recipes ?? []).slice().reverse().map((recipe) => (
-                            <div key={recipe.id} className="rounded-lg border p-3 space-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div className="font-medium">{recipe.title}</div>
-                                    <div className="text-xs text-muted-foreground">{recipe.cuisineCategory}</div>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                    {recipe.cookTime} min • €{recipe.pricePerServing}
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            </div>
+                </TabsContent>
+            </Tabs>
         </main>
     )
 }

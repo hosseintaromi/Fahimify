@@ -1,5 +1,13 @@
-import { pgTable, text, integer, numeric, jsonb, timestamp } from "drizzle-orm/pg-core"
+import { pgTable, text, integer, numeric, jsonb, timestamp, boolean } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  hasCompletedOnboarding: boolean("has_completed_onboarding").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
 
 export const recipeMaster = pgTable("recipe_master", {
   id: text("id").primaryKey(),

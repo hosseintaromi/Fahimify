@@ -52,7 +52,7 @@ export default function DashboardHome() {
       const profRes = await fetch("/api/profile")
       const prof = (await profRes.json()) as UserProfileData | null
       setProfile(prof)
-      const planRes = await fetch("/api/plan", { method: "POST", body: JSON.stringify({ userId: "demo-user" }) })
+      const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
       const planJson = (await planRes.json()) as WeeklyPlanResult
       setPlan(planJson)
       if (planJson?.days?.length) {
@@ -89,7 +89,7 @@ export default function DashboardHome() {
     const profRes = await fetch("/api/profile")
     const prof = (await profRes.json()) as UserProfileData | null
     setProfile(prof)
-    const planRes = await fetch("/api/plan", { method: "POST", body: JSON.stringify({ userId: "demo-user" }) })
+    const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
     const planJson = (await planRes.json()) as WeeklyPlanResult
     setPlan(planJson)
     setLoading(false)
