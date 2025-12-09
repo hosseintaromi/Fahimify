@@ -10,6 +10,7 @@ import {
 import type { RecipeInput } from "./fahimeh";
 
 const ensureSeeded = async () => {
+  if (process.env.SEED_MOCK !== "true") return;
   const counts = await db
     .select({ value: recipeMaster.id })
     .from(recipeMaster)
@@ -143,4 +144,10 @@ export const listIngredients = async () => {
 export const listPrices = async () => {
   await ensureSeeded();
   return db.select().from(priceInventory);
+};
+
+export const seedMockData = async () => {
+  await ensureSeeded();
+  const recipes = await db.select().from(recipeMaster);
+  return { recipes: recipes.length };
 };
