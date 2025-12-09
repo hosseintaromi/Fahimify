@@ -73,8 +73,18 @@ export default function DashboardHome() {
     setShowPlanModal(true)
   }
 
+  const generateNewPlan = async () => {
+    setLoading(true)
+    setShowPlanModal(false)
+    const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
+    const planJson = (await planRes.json()) as WeeklyPlanResult
+    setPlan(planJson)
+    setLoading(false)
+  }
+
   const bootstrapPlan = async (mode: "default" | "metrics") => {
     setLoading(true)
+    setShowPlanModal(false)
     await fetch("/api/profile/bootstrap", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,7 +103,6 @@ export default function DashboardHome() {
     const planJson = (await planRes.json()) as WeeklyPlanResult
     setPlan(planJson)
     setLoading(false)
-    setShowPlanModal(false)
   }
 
   if (showProfile) {
@@ -317,82 +326,100 @@ export default function DashboardHome() {
                 Close
               </Button>
             </div>
-            <h3 className="text-xl font-semibold text-slate-900">EU-based plan</h3>
-            <p className="text-sm text-slate-600">
-              We generate your plan using EU DRV standards by default. You can continue or add your physical metrics to individualize targets.
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                type="button"
-                className="flex-1 rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white"
-                onClick={() => bootstrapPlan("default")}
-              >
-                Continue with EU DRV
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                className="flex-1 rounded-2xl"
-                onClick={() => setShowMetrics((prev) => !prev)}
-              >
-                Add my metrics
-              </Button>
-            </div>
-            {showMetrics && (
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  type="number"
-                  placeholder="Age"
-                  value={metrics.age}
-                  onChange={(e) => setMetrics({ ...metrics, age: Number(e.target.value) })}
-                />
-                <Select
-                  value={metrics.sex}
-                  onValueChange={(val) => setMetrics({ ...metrics, sex: val as "male" | "female" })}
+            {profile ? (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900">Generate Weekly Plan</h3>
+                <p className="text-sm text-slate-600">
+                  Your plan will be generated based on your preferences (Budget: €{profile.preferences?.budget ?? 150}).
+                </p>
+                <Button
+                  type="button"
+                  className="w-full rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white"
+                  onClick={generateNewPlan}
                 >
-                  <SelectTrigger><SelectValue placeholder="Sex" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  placeholder="Weight (kg)"
-                  value={metrics.weightKg}
-                  onChange={(e) => setMetrics({ ...metrics, weightKg: Number(e.target.value) })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Height (cm)"
-                  value={metrics.heightCm}
-                  onChange={(e) => setMetrics({ ...metrics, heightCm: Number(e.target.value) })}
-                />
-                <Input
-                  type="number"
-                  placeholder="PAL (1.2 - 2.4)"
-                  value={metrics.pal}
-                  onChange={(e) => setMetrics({ ...metrics, pal: Number(e.target.value) })}
-                />
-                <Input
-                  type="text"
-                  placeholder="Body type (optional)"
-                  value={metrics.bodyType}
-                  onChange={(e) => setMetrics({ ...metrics, bodyType: e.target.value })}
-                />
-                <div className="col-span-2 flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setShowPlanModal(false)} className="rounded-2xl">
-                    Cancel
-                  </Button>
+                  Generate Plan
+                </Button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-slate-900">EU-based plan</h3>
+                <p className="text-sm text-slate-600">
+                  We generate your plan using EU DRV standards by default. You can continue or add your physical metrics to individualize targets.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <Button
                     type="button"
-                    className="rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white"
-                    onClick={() => bootstrapPlan("metrics")}
+                    className="flex-1 rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white"
+                    onClick={() => bootstrapPlan("default")}
                   >
-                    Generate with metrics
+                    Continue with EU DRV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="flex-1 rounded-2xl"
+                    onClick={() => setShowMetrics((prev) => !prev)}
+                  >
+                    Add my metrics
                   </Button>
                 </div>
-              </div>
+                {showMetrics && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      type="number"
+                      placeholder="Age"
+                      value={metrics.age}
+                      onChange={(e) => setMetrics({ ...metrics, age: Number(e.target.value) })}
+                    />
+                    <Select
+                      value={metrics.sex}
+                      onValueChange={(val) => setMetrics({ ...metrics, sex: val as "male" | "female" })}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Sex" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      placeholder="Weight (kg)"
+                      value={metrics.weightKg}
+                      onChange={(e) => setMetrics({ ...metrics, weightKg: Number(e.target.value) })}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Height (cm)"
+                      value={metrics.heightCm}
+                      onChange={(e) => setMetrics({ ...metrics, heightCm: Number(e.target.value) })}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="PAL (1.2 - 2.4)"
+                      value={metrics.pal}
+                      onChange={(e) => setMetrics({ ...metrics, pal: Number(e.target.value) })}
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Body type (optional)"
+                      value={metrics.bodyType}
+                      onChange={(e) => setMetrics({ ...metrics, bodyType: e.target.value })}
+                    />
+                    <div className="col-span-2 flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => setShowPlanModal(false)} className="rounded-2xl">
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded-2xl bg-gradient-to-r from-teal-500 to-sky-500 text-white"
+                        onClick={() => bootstrapPlan("metrics")}
+                      >
+                        Generate with metrics
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

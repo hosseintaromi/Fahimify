@@ -7,12 +7,12 @@ export const cuisineSchema = z.object({
 
 export const onboardingSchema = z.object({
   userId: z.string().optional(),
-  budget: z.number(),
+  budget: z.number().min(50, "Budget must be at least €50").max(10000, "Budget must be at most €10000"),
   allergies: z.array(z.string()),
   dislikes: z.array(z.object({ item: z.string(), priority: z.number().min(1).max(5) })),
-  cookingTime: z.number(),
-  mealsPerDay: z.number(),
-  snacksPerDay: z.number(),
+  cookingTime: z.number().min(5).max(300),
+  mealsPerDay: z.number().min(1).max(6),
+  snacksPerDay: z.number().min(0).max(5),
   dietType: z.string(),
   cuisines: z.array(cuisineSchema),
   boostNutrient: z.boolean(),

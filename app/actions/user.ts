@@ -210,39 +210,54 @@ export const getUserProfile = async (userId: string) => {
 export const listRecipes = async () => listRecipesDb();
 
 export const setDefaultProfile = async (userId: string) => {
-  const preferences = {
-    budget: 150,
-    allergies: [],
-    dislikes: [],
-    likes: [],
-    cuisines: [],
-    maxCookTime: 45,
-    mealsPerDay: 3,
-    boostNutrient: undefined as string | undefined,
+  const existingProfile = await getUserProfile(userId);
+  
+  const defaultMetrics = {
+    age: 30,
+    sex: "male" as const,
+    weightKg: 70,
+    heightCm: 175,
+    pal: 1.6,
   };
-  const nutrientTargets = { dri: { ...defaultDri }, ul: defaultUl };
-  await db
-    .insert(userProfile)
-    .values({
-      userId,
-      personalMetrics: {
-        age: 30,
-        sex: "male",
-        weightKg: 70,
-        heightCm: 175,
-        pal: 1.6,
-      },
-      preferences,
-      nutrientTargets,
-    })
-    .onConflictDoUpdate({
-      target: userProfile.userId,
-      set: {
-        preferences,
+  
+  const bmr = calculateBmrHenry(defaultMetrics);
+  const tee = calculateTee(bmr, defaultMetrics.pal);
+  const nutrientTargets = {
+    dri: { ...defaultDri, calories: tee },
+    ul: defaultUl,
+  };
+  
+  if (existingProfile) {
+    await db
+      .update(userProfile)
+      .set({
+        personalMetrics: defaultMetrics,
         nutrientTargets,
         updatedAt: sql`NOW()`,
-      },
-    });
+      })
+      .where(eq(userProfile.userId, userId));
+  } else {
+    const preferences = {
+      budget: 150,
+      allergies: [],
+      dislikes: [],
+      likes: [],
+      cuisines: [],
+      maxCookTime: 45,
+      mealsPerDay: 3,
+      boostNutrient: undefined as string | undefined,
+    };
+    
+    await db
+      .insert(userProfile)
+      .values({
+        userId,
+        personalMetrics: defaultMetrics,
+        preferences,
+        nutrientTargets,
+      });
+  }
+  
   return nutrientTargets;
 };
 
@@ -257,6 +272,8 @@ export const setProfileWithMetrics = async (
     bodyType?: string;
   }
 ) => {
+  const existingProfile = await getUserProfile(userId);
+  
   const bmr = calculateBmrHenry({
     age: metrics.age,
     sex: metrics.sex,
@@ -268,33 +285,38 @@ export const setProfileWithMetrics = async (
     dri: { ...defaultDri, calories: tee },
     ul: defaultUl,
   };
-  const preferences = {
-    budget: 150,
-    allergies: [],
-    dislikes: [],
-    likes: [],
-    cuisines: [],
-    maxCookTime: 45,
-    mealsPerDay: 3,
-    boostNutrient: undefined as string | undefined,
-    bodyType: metrics.bodyType,
-  };
-  await db
-    .insert(userProfile)
-    .values({
-      userId,
-      personalMetrics: metrics,
-      preferences,
-      nutrientTargets,
-    })
-    .onConflictDoUpdate({
-      target: userProfile.userId,
-      set: {
+  
+  if (existingProfile) {
+    await db
+      .update(userProfile)
+      .set({
+        personalMetrics: metrics,
+        nutrientTargets,
+        updatedAt: sql`NOW()`,
+      })
+      .where(eq(userProfile.userId, userId));
+  } else {
+    const preferences = {
+      budget: 150,
+      allergies: [],
+      dislikes: [],
+      likes: [],
+      cuisines: [],
+      maxCookTime: 45,
+      mealsPerDay: 3,
+      boostNutrient: undefined as string | undefined,
+      bodyType: metrics.bodyType,
+    };
+    
+    await db
+      .insert(userProfile)
+      .values({
+        userId,
         personalMetrics: metrics,
         preferences,
         nutrientTargets,
-        updatedAt: sql`NOW()`,
-      },
-    });
+      });
+  }
+  
   return nutrientTargets;
 };

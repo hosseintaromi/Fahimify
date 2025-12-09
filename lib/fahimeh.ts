@@ -104,33 +104,73 @@ export const generateWeeklyPlan = (
   if (!recipes.length) {
     return { totalCost: 0, days: [] }
   }
+  
   const valid = recipes.filter((r) => passesFilters(r, preferences))
-  const priceRange = normalizePrice(valid.length ? valid : recipes)
+  if (!valid.length) {
+    return { totalCost: 0, days: [] }
+  }
+  
+  const priceRange = normalizePrice(valid)
   const ranked = [...valid].sort(
     (a, b) => calculateScore(b, preferences, target, priceRange) - calculateScore(a, preferences, target, priceRange),
   )
+  
+  const totalMeals = 7 * preferences.mealsPerDay
+  const budgetPerMeal = preferences.budget / totalMeals
+  
   const days: DayPlan[] = []
   let cost = 0
   const used = new Set<string>()
+  
   for (let d = 0; d < 7; d += 1) {
     const meals: MealSlot[] = []
     for (let m = 0; m < preferences.mealsPerDay; m += 1) {
-      const candidate = ranked.find((r) => !used.has(r.id) && cost + r.pricePerServing <= preferences.budget)
-      const pick = candidate ?? ranked[0] ?? recipes[0]
-      if (pick) {
+      const remainingBudget = preferences.budget - cost
+      const remainingMeals = totalMeals - (d * preferences.mealsPerDay + m)
+      const maxPriceForThisMeal = remainingMeals > 0 ? remainingBudget / remainingMeals : remainingBudget
+      
+      const candidate = ranked.find(
+        (r) => 
+          !used.has(r.id) && 
+          r.pricePerServing <= maxPriceForThisMeal &&
+          cost + r.pricePerServing <= preferences.budget
+      )
+      
+      if (candidate) {
         meals.push({
-          recipeId: pick.id,
-          title: pick.title,
-          price: pick.pricePerServing,
-          cookTime: pick.cookTime,
-          nutrients: pick.nutrients,
+          recipeId: candidate.id,
+          title: candidate.title,
+          price: candidate.pricePerServing,
+          cookTime: candidate.cookTime,
+          nutrients: candidate.nutrients,
         })
-        used.add(pick.id)
-        cost += pick.pricePerServing
+        used.add(candidate.id)
+        cost += candidate.pricePerServing
+      } else {
+        const cheapest = ranked
+          .filter((r) => !used.has(r.id) && r.pricePerServing <= remainingBudget)
+          .sort((a, b) => a.pricePerServing - b.pricePerServing)[0]
+        
+        if (cheapest && cost + cheapest.pricePerServing <= preferences.budget) {
+          meals.push({
+            recipeId: cheapest.id,
+            title: cheapest.title,
+            price: cheapest.pricePerServing,
+            cookTime: cheapest.cookTime,
+            nutrients: cheapest.nutrients,
+          })
+          used.add(cheapest.id)
+          cost += cheapest.pricePerServing
+        }
+      }
+      
+      if (used.size >= valid.length) {
+        used.clear()
       }
     }
     days.push({ dateIndex: d, meals })
   }
+  
   return { totalCost: cost, days }
 }
 

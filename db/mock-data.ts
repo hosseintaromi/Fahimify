@@ -121,17 +121,25 @@ const generatedRecipes = Array.from({ length: 98 }, (_, idx) => {
   const title = `${mains[idx % mains.length]} (${
     cuisines[idx % cuisines.length]
   })`;
-  const price = 7 + (idx % 6) * 0.7;
-  const cook = 18 + (idx % 5) * 5;
-  const cal = 440 + (idx % 7) * 35;
-  const protein = 22 + (idx % 6) * 3;
-  const fat = 12 + (idx % 5) * 1.6;
-  const carbs = 54 + (idx % 8) * 6;
-  const iron = 4.4 + (idx % 6) * 0.45;
-  const magnesium = 98 + (idx % 7) * 7;
-  const potassium = 720 + (idx % 9) * 18;
-  const quantityChickpea = 150 + (idx % 5) * 25;
-  const quantityRice = 150 + (idx % 7) * 18;
+  
+  const priceCategory = idx % 3;
+  const price = priceCategory === 0 
+    ? 3.5 + (idx % 4) * 0.5
+    : priceCategory === 1 
+    ? 5.0 + (idx % 5) * 0.6
+    : 7.0 + (idx % 4) * 0.8;
+  
+  const cook = 15 + (idx % 6) * 5;
+  const cal = 350 + (idx % 8) * 40;
+  const protein = 18 + (idx % 7) * 3;
+  const fat = 10 + (idx % 6) * 2;
+  const carbs = 45 + (idx % 9) * 5;
+  const iron = 3.5 + (idx % 7) * 0.5;
+  const magnesium = 85 + (idx % 8) * 8;
+  const potassium = 650 + (idx % 10) * 20;
+  const quantityChickpea = 120 + (idx % 6) * 20;
+  const quantityRice = 130 + (idx % 8) * 15;
+  
   return {
     id: `rec-auto-${(idx + 3).toString().padStart(3, "0")}`,
     title,
