@@ -5,9 +5,16 @@ import { Button } from "@/components/ui/button"
 
 interface SwapMealModalProps {
   onClose: () => void
+  onSwap?: (strategy: "cheaper" | "faster" | "nutrient") => void
 }
 
-export default function SwapMealModal({ onClose }: SwapMealModalProps) {
+export default function SwapMealModal({ onClose, onSwap }: SwapMealModalProps) {
+  const handleSwap = (strategy: "cheaper" | "faster" | "nutrient") => {
+    if (onSwap) {
+      onSwap(strategy)
+    }
+    onClose()
+  }
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end">
       <div className="bg-card w-full rounded-t-2xl p-6 space-y-6 max-h-96 overflow-y-auto">
@@ -25,7 +32,10 @@ export default function SwapMealModal({ onClose }: SwapMealModalProps) {
         {/* Swap Options */}
         <div className="space-y-3">
           {/* Cheaper Meal */}
-          <button className="w-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-lg p-4 text-left hover:border-primary/50 transition-colors group">
+          <button
+            onClick={() => handleSwap("cheaper")}
+            className="w-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-lg p-4 text-left hover:border-primary/50 transition-colors group"
+          >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
@@ -40,7 +50,10 @@ export default function SwapMealModal({ onClose }: SwapMealModalProps) {
           </button>
 
           {/* Faster Meal */}
-          <button className="w-full bg-gradient-to-r from-accent/20 to-accent/10 border border-accent/30 rounded-lg p-4 text-left hover:border-accent/50 transition-colors group">
+          <button
+            onClick={() => handleSwap("faster")}
+            className="w-full bg-gradient-to-r from-accent/20 to-accent/10 border border-accent/30 rounded-lg p-4 text-left hover:border-accent/50 transition-colors group"
+          >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/20 group-hover:bg-accent/30 transition-colors">
@@ -55,7 +68,10 @@ export default function SwapMealModal({ onClose }: SwapMealModalProps) {
           </button>
 
           {/* Boost Nutrient */}
-          <button className="w-full bg-gradient-to-r from-green-500/20 to-green-500/10 border border-green-500/30 rounded-lg p-4 text-left hover:border-green-500/50 transition-colors group">
+          <button
+            onClick={() => handleSwap("nutrient")}
+            className="w-full bg-gradient-to-r from-green-500/20 to-green-500/10 border border-green-500/30 rounded-lg p-4 text-left hover:border-green-500/50 transition-colors group"
+          >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20 group-hover:bg-green-500/30 transition-colors">

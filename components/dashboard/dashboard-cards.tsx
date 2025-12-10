@@ -2,50 +2,100 @@
 
 import { TrendingDown, Zap } from "lucide-react"
 import TriRingChart from "./tri-ring-chart"
+import { useEffect, useState } from "react"
 
 type DashboardCardsProps = {
   budget?: number
   spent?: number
   priority?: string
+  estimatedWeeklyCost?: number
+  dailySpending?: Record<string, number>
 }
 
-export default function DashboardCards({ budget = 150, spent = 0, priority }: DashboardCardsProps) {
+interface MacroData {
+  current: number
+  target: number
+  percentage: number
+  unit: string
+}
+
+interface NutritionData {
+  macros: {
+    protein: MacroData
+    carbs: MacroData
+    fat: MacroData
+    calories: MacroData
+  }
+}
+
+export default function DashboardCards({ budget = 150, spent = 0, priority, estimatedWeeklyCost = 0, dailySpending = {} }: DashboardCardsProps) {
+  const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
+
   const remaining = budget - spent
   const hasSpend = spent > 0
+
+  useEffect(() => {
+    const fetchNutrition = async () => {
+      try {
+        const res = await fetch("/api/nutrition", {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setNutritionData(data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch nutrition:", err)
+      }
+    }
+    if (hasSpend) {
+      fetchNutrition()
+    }
+  }, [spent, hasSpend])
   const underPlanPercent = hasSpend && budget ? Math.max(0, Math.round(((budget - spent) / budget) * 100)) : 0
-  const weeklySpend = hasSpend
-    ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
-      day,
-      percent: Math.min(100, Math.max(10, Math.round((spent / budget || 0.1) * 100))),
-    }))
-    : []
-  const hasNutrientData = hasSpend
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  const weeklySpend = daysOfWeek.map((day) => {
+    const daySpent = dailySpending[day] || 0
+    return {
+      day: day.slice(0, 3),
+      percent: budget ? Math.min(100, Math.max(5, (daySpent / budget) * 100 * 7)) : 5,
+      amount: daySpent,
+    }
+  })
+  const hasNutrientData = nutritionData && nutritionData.macros && hasSpend
   const hasNutrientBoost = Boolean(priority) && hasNutrientData
+
+  const fatPercent = nutritionData?.macros.fat.percentage || 0
+  const caloriesPercent = nutritionData?.macros.calories.percentage || 0
+  const proteinPercent = nutritionData?.macros.protein.percentage || 0
+  const carbsPercent = nutritionData?.macros.carbs.percentage || 0
+
   const nutrientStats = hasNutrientData
     ? hasNutrientBoost
       ? [
-        { label: priority ?? "Priority", percent: 80, detail: "Goal in progress" },
-        { label: "Calories", percent: 75, detail: "Tracking" },
-        { label: "Protein", percent: 85, detail: "Tracking" },
+        { label: priority ?? "Priority", percent: carbsPercent, detail: "Goal in progress" },
+        { label: "Calories", percent: caloriesPercent, detail: "Tracking" },
+        { label: "Protein", percent: proteinPercent, detail: "Tracking" },
       ]
       : [
-        { label: "Fat", percent: 70, detail: "Tracking" },
-        { label: "Calories", percent: 75, detail: "Tracking" },
-        { label: "Protein", percent: 85, detail: "Tracking" },
+        { label: "Fat", percent: fatPercent, detail: "Tracking" },
+        { label: "Calories", percent: caloriesPercent, detail: "Tracking" },
+        { label: "Protein", percent: proteinPercent, detail: "Tracking" },
       ]
     : []
 
   const nutrientLayers = hasNutrientData
     ? hasNutrientBoost
       ? [
-        { label: priority ?? "Priority", current: 80, target: 100, color: "#14b8a6" },
-        { label: "Calories", current: 75, target: 100, color: "#38bdf8" },
-        { label: "Protein", current: 85, target: 100, color: "#6366f1" },
+        { label: priority ?? "Priority", current: carbsPercent, target: 100, color: "#14b8a6" },
+        { label: "Calories", current: caloriesPercent, target: 100, color: "#38bdf8" },
+        { label: "Protein", current: proteinPercent, target: 100, color: "#6366f1" },
       ]
       : [
-        { label: "Fat", current: 70, target: 100, color: "#f97316" },
-        { label: "Calories", current: 75, target: 100, color: "#38bdf8" },
-        { label: "Protein", current: 85, target: 100, color: "#6366f1" },
+        { label: "Fat", current: fatPercent, target: 100, color: "#f97316" },
+        { label: "Calories", current: caloriesPercent, target: 100, color: "#38bdf8" },
+        { label: "Protein", current: proteinPercent, target: 100, color: "#6366f1" },
       ]
     : []
 
@@ -73,24 +123,26 @@ export default function DashboardCards({ budget = 150, spent = 0, priority }: Da
             )}
           </div>
         </div>
-        {hasSpend ? (
-          <div className="mt-8 grid grid-cols-7 gap-2">
-            {weeklySpend.map((entry) => (
-              <div key={entry.day} className="flex flex-col items-center gap-2 text-xs font-medium text-slate-500">
-                <div className="flex h-20 w-full items-end justify-center">
-                  <div
-                    className={`w-full rounded-2xl ${entry.percent >= 80 ? "bg-linear-to-b from-sky-400 to-teal-500" : "bg-linear-to-b from-slate-200 to-slate-100"
-                      }`}
-                    style={{ height: `${(entry.percent / 100) * 80}px` }}
-                  />
-                </div>
-                <span>{entry.day}</span>
+        <div className="mt-8 grid grid-cols-7 gap-2">
+          {weeklySpend.map((entry) => (
+            <div key={entry.day} className="flex flex-col items-center gap-2 text-xs font-medium text-slate-500">
+              <div className="flex h-20 w-full items-end justify-center">
+                <div
+                  className={`w-full rounded-2xl ${entry.amount > 0 ? "bg-gradient-to-b from-sky-400 to-teal-500" : "bg-gradient-to-b from-slate-200 to-slate-100"}`}
+                  style={{ height: `${Math.max(5, (entry.percent / 100) * 80)}px` }}
+                />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-            No spending data yet
+              <span>{entry.day}</span>
+              {entry.amount > 0 && <span className="text-[10px] font-semibold text-teal-600">€{entry.amount.toFixed(1)}</span>}
+            </div>
+          ))}
+        </div>
+        {estimatedWeeklyCost > 0 && (
+          <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Estimated weekly cost</span>
+              <span className="font-semibold text-blue-600">€{estimatedWeeklyCost.toFixed(2)}</span>
+            </div>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState, useCallback } from "react"
+import { ChevronDown, Check } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import DashboardHeader from "./dashboard-header"
 import DashboardCards from "./dashboard-cards"
@@ -29,15 +29,53 @@ export default function DashboardHome() {
   const [showSettings, setShowSettings] = useState(false)
   const [showAddRecipe, setShowAddRecipe] = useState(false)
   const [showRecipeDetails, setShowRecipeDetails] = useState(false)
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null)
   const [showProfile, setShowProfile] = useState(false)
   const [expandedDay, setExpandedDay] = useState<string | null>(null)
-  const [swapTarget, setSwapTarget] = useState<{ day: string; meal: string } | null>(null)
+  const [swapTarget, setSwapTarget] = useState<{ day: string; meal: string; dayIndex: number; mealIndex: number } | null>(null)
   const [plan, setPlan] = useState<WeeklyPlanResult | null>(null)
   const [profile, setProfile] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [showMetrics, setShowMetrics] = useState(false)
   const [metrics, setMetrics] = useState({ age: 30, sex: "male", weightKg: 70, heightCm: 175, pal: 1.6, bodyType: "" })
+  const [weeklySpending, setWeeklySpending] = useState<{ totalSpent: number; dailySpending: Record<string, number> }>({ totalSpent: 0, dailySpending: {} })
+  const [eatenMeals, setEatenMeals] = useState<Set<string>>(new Set())
+
+  const refreshSpending = useCallback(async () => {
+    try {
+      const spendingRes = await fetch("/api/meal-log", {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
+      const spendingData = await spendingRes.json()
+      setWeeklySpending({ totalSpent: spendingData.totalSpent || 0, dailySpending: spendingData.dailySpending || {} })
+      const logs = spendingData.logs || []
+      const eatenIds = new Set(logs.map((log: { recipeId: string }) => log.recipeId))
+      setEatenMeals(eatenIds)
+    } catch (err) {
+      console.error("Failed to refresh spending:", err)
+    }
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    const profRes = await fetch("/api/profile")
+    const prof = (await profRes.json()) as UserProfileData | null
+    setProfile(prof)
+    const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
+    const planJson = (await planRes.json()) as WeeklyPlanResult
+    setPlan(planJson)
+    await refreshSpending()
+    if (planJson?.days?.length) {
+      const today = new Date()
+      const todayName = today.toLocaleDateString("en-US", { weekday: "long" })
+      setExpandedDay(todayName)
+    }
+    setLoading(false)
+  }
 
   useEffect(() => {
     const tabParam = searchParams.get("tab")
@@ -47,22 +85,44 @@ export default function DashboardHome() {
   }, [searchParams, currentTab])
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true)
-      const profRes = await fetch("/api/profile")
-      const prof = (await profRes.json()) as UserProfileData | null
-      setProfile(prof)
-      const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
-      const planJson = (await planRes.json()) as WeeklyPlanResult
-      setPlan(planJson)
-      if (planJson?.days?.length) {
-        const name = new Date(2024, 0, 1).toLocaleDateString("en-US", { weekday: "long" })
-        setExpandedDay(name)
-      }
-      setLoading(false)
+    if (currentTab === "home") {
+      refreshSpending()
     }
-    load()
-  }, [])
+  }, [currentTab, refreshSpending])
+
+  useEffect(() => {
+    loadData()
+
+    const handleRouteChange = () => {
+      refreshSpending()
+    }
+
+    window.addEventListener('popstate', handleRouteChange)
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange)
+    }
+  }, [refreshSpending])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSpending()
+      }
+    }
+
+    const handleFocus = () => {
+      refreshSpending()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [refreshSpending])
 
   const toggleDay = (day: string) => {
     setExpandedDay((prev) => (prev === day ? null : day))
@@ -102,6 +162,67 @@ export default function DashboardHome() {
     const planRes = await fetch("/api/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
     const planJson = (await planRes.json()) as WeeklyPlanResult
     setPlan(planJson)
+    setLoading(false)
+  }
+
+  const handleMealEaten = async (meal: { recipeId: string; title: string; price: number; nutrients?: Record<string, number> }) => {
+    await fetch("/api/meal-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipeId: meal.recipeId,
+        recipeTitle: meal.title,
+        cost: meal.price,
+        nutrients: meal.nutrients || {},
+      }),
+    })
+    await refreshSpending()
+  }
+
+  const handleSwapMeal = async (mealIndex: number, strategy: "cheaper" | "faster" | "nutrient") => {
+    setLoading(true)
+    const res = await fetch("/api/plan/swap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dayIndex: 0,
+        mealIndex,
+        strategy,
+      }),
+    })
+    const updatedPlan = (await res.json()) as WeeklyPlanResult
+    setPlan(updatedPlan)
+    setLoading(false)
+  }
+
+  const handleSwapFromWeeklyPlan = async (strategy: "cheaper" | "faster" | "nutrient") => {
+    if (!swapTarget) return
+    setLoading(true)
+    const targetToSwap = swapTarget
+    setSwapTarget(null)
+    try {
+      const res = await fetch("/api/plan/swap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dayIndex: targetToSwap.dayIndex,
+          mealIndex: targetToSwap.mealIndex,
+          strategy,
+        }),
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        console.error("Swap failed:", error)
+        alert(`Failed to swap meal: ${error.error || 'Unknown error'}`)
+        setLoading(false)
+        return
+      }
+      const updatedPlan = (await res.json()) as WeeklyPlanResult
+      setPlan(updatedPlan)
+    } catch (err) {
+      console.error("Swap error:", err)
+      alert("Failed to swap meal")
+    }
     setLoading(false)
   }
 
@@ -153,19 +274,33 @@ export default function DashboardHome() {
     )
   }
 
+  const today = new Date()
+  const todayDayOfWeek = today.getDay()
+
   const weeklyPlan:
-    | { day: string; focus: string; meals: { type: string; recipe: string; duration: string; cost: string }[] }[]
+    | { day: string; focus: string; meals: { type: string; recipe: string; duration: string; cost: string }[]; dayIndex: number }[]
     | [] =
-    plan?.days?.map((day, idx) => ({
-      day: new Date(2024, 0, 1 + idx).toLocaleDateString("en-US", { weekday: "long" }),
-      focus: profile?.preferences?.boostNutrient ? `${profile.preferences.boostNutrient} focus` : "Balanced day",
-      meals: day.meals.map((meal, mIdx) => ({
-        type: ["Breakfast", "Lunch", "Dinner"][mIdx] ?? "Meal",
-        recipe: meal.title,
-        duration: `${meal.cookTime}m`,
-        cost: `€${meal.price.toFixed(2)}`,
-      })),
-    })) ?? []
+    plan?.days
+      ?.map((day, idx) => {
+        const planDate = new Date(2024, 0, 1 + idx)
+        const planDayOfWeek = planDate.getDay()
+        return {
+          day: planDate.toLocaleDateString("en-US", { weekday: "long" }),
+          focus: profile?.preferences?.boostNutrient ? `${profile.preferences.boostNutrient} focus` : "Balanced day",
+          meals: day.meals.map((meal, mIdx) => ({
+            type: ["Breakfast", "Lunch", "Dinner"][mIdx] ?? "Meal",
+            recipe: meal.title,
+            duration: `${meal.cookTime}m`,
+            cost: `€${meal.price.toFixed(2)}`,
+          })),
+          dayIndex: idx,
+          planDayOfWeek,
+        }
+      })
+      .filter((day) => {
+        if (todayDayOfWeek === 0) return day.planDayOfWeek === 0
+        return day.planDayOfWeek >= todayDayOfWeek || day.planDayOfWeek === 0
+      }) ?? []
 
   if (currentTab === "plan") {
     return (
@@ -222,44 +357,62 @@ export default function DashboardHome() {
                   </div>
                   {isOpen && (
                     <div className="border-t border-slate-100 p-5 space-y-5">
-                      {day.meals.map((meal, idx) => (
-                        <div
-                          key={`${day.day}-${meal.type}-${idx}`}
-                          className="rounded-3xl border border-white/80 bg-white px-4 py-4 shadow-sm transition hover:-translate-y-0.5"
-                        >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                              <p className="text-xs uppercase tracking-wide text-slate-400">{meal.type}</p>
-                              <p className="text-lg font-semibold text-slate-900">{meal.recipe}</p>
-                              <p className="text-xs text-slate-500">
-                                {meal.duration} • {meal.cost}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation()
-                                  setShowRecipeDetails(true)
-                                }}
-                                className="rounded-full border border-teal-100 px-4 py-2 text-xs font-semibold text-teal-600 transition hover:bg-teal-50"
-                              >
-                                View
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation()
-                                  setSwapTarget({ day: day.day, meal: meal.recipe })
-                                }}
-                                className="rounded-full border border-teal-100 px-4 py-2 text-xs font-semibold text-teal-600 transition hover:bg-teal-50"
-                              >
-                                Swap meal
-                              </button>
+                      {day.meals.map((meal, mealIdx) => {
+                        const recipeId = plan?.days?.[day.dayIndex]?.meals?.[mealIdx]?.recipeId
+                        const isEaten = recipeId ? eatenMeals.has(recipeId) : false
+
+                        return (
+                          <div
+                            key={`${day.day}-${meal.type}-${mealIdx}`}
+                            className={`rounded-3xl border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 ${isEaten
+                                ? "border-emerald-200 bg-emerald-50/50"
+                                : "border-white/80 bg-white"
+                              }`}
+                          >
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <p className="text-xs uppercase tracking-wide text-slate-400">{meal.type}</p>
+                                  {isEaten && (
+                                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                                      <Check size={14} />
+                                      Eaten
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-lg font-semibold text-slate-900">{meal.recipe}</p>
+                                <p className="text-xs text-slate-500">
+                                  {meal.duration} • {meal.cost}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    if (recipeId) {
+                                      router.push(`/recipe/${recipeId}`)
+                                    }
+                                  }}
+                                  className="rounded-full border border-teal-100 px-4 py-2 text-xs font-semibold text-teal-600 transition hover:bg-teal-50"
+                                >
+                                  View
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    setSwapTarget({ day: day.day, meal: meal.recipe, dayIndex: day.dayIndex, mealIndex: mealIdx })
+                                  }}
+                                  className="rounded-full border border-teal-100 px-4 py-2 text-xs font-semibold text-teal-600 transition hover:bg-teal-50"
+                                >
+                                  Swap meal
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -268,7 +421,7 @@ export default function DashboardHome() {
           )}
         </div>
         <BottomNavigation currentTab={currentTab} onTabChange={setCurrentTab} />
-        {swapTarget && <SwapMealModal onClose={() => setSwapTarget(null)} />}
+        {swapTarget && <SwapMealModal onClose={() => setSwapTarget(null)} onSwap={handleSwapFromWeeklyPlan} />}
       </div>
     )
   }
@@ -279,8 +432,10 @@ export default function DashboardHome() {
       <div className="p-4 space-y-6">
         <DashboardCards
           budget={profile?.preferences?.budget}
-          spent={plan?.totalCost}
+          spent={weeklySpending.totalSpent}
           priority={profile?.preferences?.boostNutrient}
+          estimatedWeeklyCost={plan?.totalCost}
+          dailySpending={weeklySpending.dailySpending}
         />
         {(!plan || !plan.days?.length) && (
           <div className="rounded-[28px] border border-dashed border-slate-200 bg-white/80 p-5 shadow-sm text-center space-y-3">
@@ -295,10 +450,18 @@ export default function DashboardHome() {
           </div>
         )}
         <TodaysPlan
-          onRecipeClick={() => setShowRecipeDetails(true)}
+          onRecipeClick={(recipeId) => router.push(`/recipe/${recipeId}`)}
           meals={
-            plan?.days?.[0]?.meals?.map((m) => ({ title: m.title, cookTime: m.cookTime, price: m.price })) ?? []
+            plan?.days?.[0]?.meals?.map((m) => ({
+              recipeId: m.recipeId,
+              title: m.title,
+              cookTime: m.cookTime,
+              price: m.price,
+              nutrients: m.nutrients
+            })) ?? []
           }
+          onMealEaten={handleMealEaten}
+          onSwapMeal={handleSwapMeal}
         />
         <div className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-lg space-y-4">
           <div>
@@ -317,7 +480,7 @@ export default function DashboardHome() {
         </div>
       </div>
       <BottomNavigation currentTab={currentTab} onTabChange={setCurrentTab} />
-      {swapTarget && <SwapMealModal onClose={() => setSwapTarget(null)} />}
+      {swapTarget && <SwapMealModal onClose={() => setSwapTarget(null)} onSwap={handleSwapFromWeeklyPlan} />}
       {showPlanModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 space-y-4 shadow-xl">

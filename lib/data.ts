@@ -8,6 +8,7 @@ import {
   recipeMaster,
 } from "@/db/schema";
 import type { RecipeInput } from "./fahimeh";
+import { eq } from "drizzle-orm";
 
 const ensureSeeded = async () => {
   if (process.env.SEED_MOCK !== "true") return;
@@ -144,6 +145,37 @@ export const listIngredients = async () => {
 export const listPrices = async () => {
   await ensureSeeded();
   return db.select().from(priceInventory);
+};
+
+export const getRecipeById = async (
+  id: string
+): Promise<RecipeInput | null> => {
+  await ensureSeeded();
+  const recipes = await db
+    .select()
+    .from(recipeMaster)
+    .where(eq(recipeMaster.id, id));
+  if (!recipes.length) return null;
+  const rec = recipes[0];
+  const recipeIngs = await db
+    .select()
+    .from(recipeIngredient)
+    .where(eq(recipeIngredient.recipeId, id));
+  return {
+    id: rec.id,
+    title: rec.title,
+    instructions: rec.instructions ?? "",
+    cookTime: rec.cookTime,
+    cuisineCategory: rec.cuisineCategory,
+    sourceType: rec.sourceType,
+    imageUrl: rec.imageUrl ?? "",
+    pricePerServing: Number(rec.pricePerServing ?? 0),
+    nutrients: (rec.nutrients as Record<string, number>) ?? {},
+    ingredients: recipeIngs.map((ri) => ({
+      ingredientId: ri.ingredientId,
+      quantityGrams: Number(ri.quantityGrams),
+    })),
+  };
 };
 
 export const seedMockData = async () => {
