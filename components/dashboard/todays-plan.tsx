@@ -53,24 +53,23 @@ export default function TodaysPlan({ onRecipeClick, meals = [], onMealEaten, onS
     }
   }
 
-  const MealItem = ({ 
-    meal, 
-    mealType, 
-    mealIndex 
-  }: { 
-    meal?: { recipeId: string; title: string; cookTime: number; price: number; cuisine?: string; nutrients?: Record<string, number> }, 
-    mealType: string, 
-    mealIndex: number 
+  const MealItem = ({
+    meal,
+    mealType,
+    mealIndex
+  }: {
+    meal?: { recipeId: string; title: string; cookTime: number; price: number; cuisine?: string; nutrients?: Record<string, number> },
+    mealType: string,
+    mealIndex: number
   }) => {
     const isEaten = meal ? eatenMeals.has(meal.recipeId) : false
-    
+
     return (
-      <div 
-        className={`rounded-2xl border p-4 transition ${
-          isEaten 
-            ? "border-emerald-200 bg-emerald-50/50" 
+      <div
+        className={`rounded-2xl border p-4 transition ${isEaten
+            ? "border-emerald-200 bg-emerald-50/50"
             : "border-slate-200 bg-white hover:border-teal-200"
-        } ${meal ? "cursor-pointer" : "opacity-50"}`}
+          } ${meal ? "cursor-pointer" : "opacity-50"}`}
         onClick={meal ? () => onRecipeClick(meal.recipeId) : undefined}
       >
         <div className="flex items-start justify-between gap-3">

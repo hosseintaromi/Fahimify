@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
+    "test:db:setup": "tsx scripts/test-db-setup.ts",
+    "test:db:reset": "tsx scripts/test-db-setup.ts --reset",
     "reset:db": "tsx scripts/reset-db.ts",
     "seed:mock": "SEED_MOCK=true tsx scripts/seed.ts"
   },
@@ -53,6 +55,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.38.3",
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",

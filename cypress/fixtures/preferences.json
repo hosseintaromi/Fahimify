@@ -1,0 +1,41 @@
+{
+  "default": {
+    "age": 30,
+    "sex": "male",
+    "weightKg": 70,
+    "heightCm": 175,
+    "pal": 1.6,
+    "budget": 100,
+    "cuisines": [
+      { "style": "Italian", "priority": 5 },
+      { "style": "Korean", "priority": 4 }
+    ],
+    "allergies": ["peanut"],
+    "boostNutrient": "magnesium"
+  },
+  "italian_only": {
+    "age": 28,
+    "sex": "female",
+    "weightKg": 60,
+    "heightCm": 165,
+    "pal": 1.4,
+    "budget": 80,
+    "cuisines": [{ "style": "Italian", "priority": 5 }],
+    "allergies": [],
+    "boostNutrient": "protein"
+  },
+  "multiple_allergies": {
+    "age": 35,
+    "sex": "male",
+    "weightKg": 80,
+    "heightCm": 180,
+    "pal": 1.8,
+    "budget": 120,
+    "cuisines": [
+      { "style": "Korean", "priority": 5 },
+      { "style": "Japanese", "priority": 4 }
+    ],
+    "allergies": ["peanut", "shellfish"],
+    "boostNutrient": "iron"
+  }
+}

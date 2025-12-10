@@ -12,7 +12,10 @@ import { sql } from "drizzle-orm";
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  role: text("role").notNull().default("user"),
+  passwordHash: text("password_hash"),
   hasCompletedOnboarding: boolean("has_completed_onboarding")
     .notNull()
     .default(false),

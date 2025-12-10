@@ -35,6 +35,8 @@ Thumbs.db
 
 # Testing folders
 coverage
+cypress/screenshots
+cypress/videos
 
 # Temporary files
 *.swp

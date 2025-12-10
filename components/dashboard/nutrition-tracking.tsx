@@ -149,8 +149,8 @@ export default function NutritionTracking() {
                 key={filter.value}
                 onClick={() => setMealType(filter.value)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${mealType === filter.value
-                    ? "border-teal-200 bg-white text-teal-600 shadow-sm"
-                    : "border-white/60 bg-white/50 text-slate-500 hover:border-teal-100"
+                  ? "border-teal-200 bg-white text-teal-600 shadow-sm"
+                  : "border-white/60 bg-white/50 text-slate-500 hover:border-teal-100"
                   }`}
               >
                 {filter.label}

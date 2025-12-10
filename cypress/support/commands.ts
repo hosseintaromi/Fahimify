@@ -1,23 +1,135 @@
-Cypress.Commands.add('login', (username: string, password: string) => {
-  cy.visit('/login')
-  cy.get('input[id*="username"]').first().type(username)
-  cy.get('input[id*="password"]').first().type(password)
-  cy.get('button[type="submit"]').first().click()
-  cy.url().should('not.include', '/login')
-})
-
-Cypress.Commands.add('clearCookies', () => {
-  cy.clearCookies()
-})
+/// <reference types="cypress" />
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      login(username: string, password: string): Chainable<void>
-      clearCookies(): Chainable<void>
+      signup(
+        username: string,
+        email: string,
+        password: string
+      ): Chainable<void>;
+      login(email: string, password: string): Chainable<void>;
+      completeOnboarding(preferences: any): Chainable<void>;
+      generatePlan(): Chainable<void>;
+      markMealEaten(mealSelector: string): Chainable<void>;
+      swapMeal(strategy: "cheaper" | "faster" | "nutrient"): Chainable<void>;
+      getBudgetRemaining(): Chainable<string>;
+      getSpent(): Chainable<string>;
+      getMacroPercent(macro: string): Chainable<string>;
     }
   }
 }
 
-export {}
+Cypress.Commands.add(
+  "signup",
+  (username: string, email: string, password: string) => {
+    cy.visit("/signup");
+    cy.wait(1000);
+    cy.get('input[name="username"]').clear().type(username);
+    cy.get('input[name="email"]').clear().type(email);
+    cy.get('input[name="password"]').clear().type(password);
+    cy.get('button[type="submit"]').click();
+    cy.wait(4000);
+  }
+);
 
+Cypress.Commands.add("login", (email: string, password: string) => {
+  cy.visit("/login");
+  cy.get('input[id="login-username"]').clear().type(email);
+  cy.get('input[id="login-password"]').clear().type(password);
+  cy.get('button[type="submit"]').click();
+  cy.wait(3000);
+  cy.url().should("not.include", "/login", { timeout: 10000 });
+});
+
+Cypress.Commands.add("completeOnboarding", (preferences: any) => {
+  cy.contains("button", "Next", { timeout: 10000 }).should("be.visible");
+  
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Next").click();
+  cy.wait(1000);
+
+  cy.contains("button", "Finish setup").click();
+  cy.wait(5000);
+});
+
+Cypress.Commands.add("generatePlan", () => {
+  cy.get("body").then(($body) => {
+    if ($body.text().includes("Generate weekly plan")) {
+      cy.intercept("POST", "/api/plan").as("generatePlan");
+      cy.contains("button", "Generate weekly plan").click();
+      cy.wait("@generatePlan", { timeout: 15000 });
+      cy.wait(2000);
+    } else {
+      cy.log("Plan already exists, skipping generation");
+      cy.wait(2000);
+    }
+  });
+});
+
+Cypress.Commands.add("markMealEaten", (mealSelector: string) => {
+  cy.intercept("POST", "/api/meal-log").as("logMeal");
+  cy.get(mealSelector).within(() => {
+    cy.contains("button", "Mark").click();
+  });
+  cy.wait("@logMeal", { timeout: 10000 });
+  cy.wait(500);
+});
+
+Cypress.Commands.add(
+  "swapMeal",
+  (strategy: "cheaper" | "faster" | "nutrient") => {
+    cy.intercept("POST", "/api/plan/swap").as("swapMeal");
+
+    cy.contains("button", "Swap").click();
+    cy.wait(300);
+
+    const buttonText = {
+      cheaper: "Find Cheaper Meal",
+      faster: "Find Faster Meal",
+      nutrient: "Optimize Nutrients",
+    };
+
+    cy.contains("button", buttonText[strategy]).click();
+    cy.wait("@swapMeal", { timeout: 10000 });
+    cy.wait(500);
+  }
+);
+
+Cypress.Commands.add("getBudgetRemaining", () => {
+  return cy
+    .contains("Budget remaining")
+    .parent()
+    .find("p")
+    .eq(0)
+    .invoke("text");
+});
+
+Cypress.Commands.add("getSpent", () => {
+  return cy.contains("Spent this week").parent().find("p").eq(0).invoke("text");
+});
+
+Cypress.Commands.add("getMacroPercent", (macro: string) => {
+  return cy
+    .contains(macro.toUpperCase())
+    .parent()
+    .find("p")
+    .eq(0)
+    .invoke("text");
+});
+
+export {};

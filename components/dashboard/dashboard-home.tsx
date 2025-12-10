@@ -365,8 +365,8 @@ export default function DashboardHome() {
                           <div
                             key={`${day.day}-${meal.type}-${mealIdx}`}
                             className={`rounded-3xl border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 ${isEaten
-                                ? "border-emerald-200 bg-emerald-50/50"
-                                : "border-white/80 bg-white"
+                              ? "border-emerald-200 bg-emerald-50/50"
+                              : "border-white/80 bg-white"
                               }`}
                           >
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

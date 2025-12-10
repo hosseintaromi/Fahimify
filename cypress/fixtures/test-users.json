@@ -1,0 +1,17 @@
+{
+  "default": {
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "Test123!@#"
+  },
+  "italian_lover": {
+    "username": "italianfan",
+    "email": "italian@example.com",
+    "password": "Test123!@#"
+  },
+  "allergy_user": {
+    "username": "allergyuser",
+    "email": "allergy@example.com",
+    "password": "Test123!@#"
+  }
+}
