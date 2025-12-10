@@ -14,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     const checkAuth = async () => {
       const user = await getCurrentUser()
-      
+
       if (!user) {
         router.replace("/login")
         return
