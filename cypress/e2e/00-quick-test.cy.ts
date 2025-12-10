@@ -19,7 +19,7 @@ describe("Quick Functionality Test", () => {
   });
 
   beforeEach(() => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
   });
 
   it("should display dashboard with budget and spending", () => {

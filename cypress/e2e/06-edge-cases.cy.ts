@@ -17,7 +17,7 @@ describe("Edge Cases", () => {
     });
 
     it("should prevent duplicate meal logging", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("Breakfast")
         .parents('[class*="rounded"]')
@@ -64,7 +64,7 @@ describe("Edge Cases", () => {
     });
 
     it("should handle budget exceeded scenario", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("Breakfast")
         .parents('[class*="rounded"]')
@@ -121,7 +121,7 @@ describe("Edge Cases", () => {
     });
 
     it("should navigate to recipe detail and back", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("Dinner").parents('[class*="rounded"]').first().click();
 
@@ -138,7 +138,7 @@ describe("Edge Cases", () => {
     });
 
     it("should navigate from weekly plan to recipe detail", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("button", "Plan").click();
 
@@ -179,21 +179,21 @@ describe("Edge Cases", () => {
     });
 
     it("should show empty state when no plan exists", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("No plan yet").should("be.visible");
       cy.contains("Generate weekly plan").should("be.visible");
     });
 
     it("should show nutrition tracking empty state", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("button", "Nutrition").click();
       cy.contains("No nutrition data yet").should("be.visible");
     });
 
     it("should show plan tab empty state", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("button", "Plan").click();
       cy.contains("No weekly plan yet").should("be.visible");
@@ -218,7 +218,7 @@ describe("Edge Cases", () => {
     });
 
     it("should handle marking all weekly meals as eaten", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.contains("button", "Plan").click();
 
@@ -333,7 +333,7 @@ describe("Edge Cases", () => {
     });
 
     it("should handle network errors gracefully", () => {
-      cy.login(testUser.email, testUser.password);
+      cy.login(testUser.username, testUser.password);
 
       cy.intercept("POST", "/api/meal-log", { forceNetworkError: true }).as(
         "networkError"

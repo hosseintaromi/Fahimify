@@ -18,7 +18,7 @@ describe("Weekly Plan Day Filtering", () => {
   });
 
   beforeEach(() => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
     cy.contains("button", "Plan").click();
   });
 

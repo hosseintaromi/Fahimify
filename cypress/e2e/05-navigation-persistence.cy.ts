@@ -18,7 +18,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should persist data across tab navigation", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.contains("Breakfast")
       .parents('[class*="rounded"]')
@@ -57,7 +57,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should persist session after page refresh", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.getSpent().then((spentBefore) => {
       cy.reload();
@@ -78,7 +78,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should maintain authentication after browser back/forward", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.contains("button", "Plan").click();
     cy.wait(500);
@@ -95,7 +95,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should preserve eaten meals across multiple sessions", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.contains("Lunch")
       .parents('[class*="rounded"]')
@@ -109,7 +109,7 @@ describe("Navigation & Persistence", () => {
     cy.clearCookies();
     cy.clearLocalStorage();
 
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.contains("Breakfast")
       .parents('[class*="rounded"]')
@@ -127,7 +127,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should handle direct URL navigation", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.visit("/dashboard?tab=plan");
     cy.contains("Weekly Plan").should("be.visible");
@@ -151,7 +151,7 @@ describe("Navigation & Persistence", () => {
   });
 
   it("should maintain meal log history", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.contains("Dinner")
       .parents('[class*="rounded"]')

@@ -67,8 +67,8 @@ export default function TodaysPlan({ onRecipeClick, meals = [], onMealEaten, onS
     return (
       <div
         className={`rounded-2xl border p-4 transition ${isEaten
-            ? "border-emerald-200 bg-emerald-50/50"
-            : "border-slate-200 bg-white hover:border-teal-200"
+          ? "border-emerald-200 bg-emerald-50/50"
+          : "border-slate-200 bg-white hover:border-teal-200"
           } ${meal ? "cursor-pointer" : "opacity-50"}`}
         onClick={meal ? () => onRecipeClick(meal.recipeId) : undefined}
       >

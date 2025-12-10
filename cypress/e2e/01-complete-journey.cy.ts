@@ -119,7 +119,7 @@ describe("Complete User Journey", () => {
   });
 
   it("should handle navigation back to dashboard", () => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
 
     cy.url().should("include", "/dashboard");
     cy.contains("Your meals").should("be.visible");

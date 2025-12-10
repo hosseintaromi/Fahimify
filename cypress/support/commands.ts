@@ -8,7 +8,7 @@ declare global {
         email: string,
         password: string
       ): Chainable<void>;
-      login(email: string, password: string): Chainable<void>;
+      login(identifier: string, password: string): Chainable<void>;
       completeOnboarding(preferences: any): Chainable<void>;
       generatePlan(): Chainable<void>;
       markMealEaten(mealSelector: string): Chainable<void>;
@@ -33,9 +33,10 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("login", (email: string, password: string) => {
+Cypress.Commands.add("login", (identifier: string, password: string) => {
+  const username = identifier.includes("@") ? identifier.split("@")[0] : identifier;
   cy.visit("/login");
-  cy.get('input[id="login-username"]').clear().type(email);
+  cy.get('input[id="login-username"]').clear().type(username);
   cy.get('input[id="login-password"]').clear().type(password);
   cy.get('button[type="submit"]').click();
   cy.wait(3000);
@@ -65,6 +66,22 @@ Cypress.Commands.add("completeOnboarding", (preferences: any) => {
 
   cy.contains("button", "Finish setup").click();
   cy.wait(5000);
+
+  const payload = {
+    budget: preferences?.budget ?? 150,
+    allergies: preferences?.allergies ?? [],
+    dislikes: preferences?.dislikes ?? [],
+    cookingTime: preferences?.cookingTime ?? 30,
+    mealsPerDay: preferences?.mealsPerDay ?? 3,
+    snacksPerDay: preferences?.snacksPerDay ?? 0,
+    dietType: preferences?.dietType ?? "Omnivore",
+    cuisines: preferences?.cuisines ?? [],
+    boostNutrient: Boolean(preferences?.boostNutrient),
+    priorityNutrient: preferences?.boostNutrient ?? null,
+  };
+
+  cy.request("POST", "/api/onboarding", payload);
+  cy.wait(500);
 });
 
 Cypress.Commands.add("generatePlan", () => {
@@ -79,6 +96,7 @@ Cypress.Commands.add("generatePlan", () => {
       cy.wait(2000);
     }
   });
+  cy.contains("Breakfast", { timeout: 20000 }).should("be.visible");
 });
 
 Cypress.Commands.add("markMealEaten", (mealSelector: string) => {

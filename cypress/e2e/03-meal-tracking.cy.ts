@@ -18,7 +18,7 @@ describe("Multi-Meal Tracking", () => {
   });
 
   beforeEach(() => {
-    cy.login(testUser.email, testUser.password);
+    cy.login(testUser.username, testUser.password);
   });
 
   it("should track single meal consumption", () => {
