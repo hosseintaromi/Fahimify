@@ -28,11 +28,18 @@ interface NutritionData {
   }
 }
 
-export default function DashboardCards({ budget = 150, spent = 0, priority, estimatedWeeklyCost = 0, dailySpending = {} }: DashboardCardsProps) {
+export default function DashboardCards({
+  budget,
+  spent = 0,
+  priority,
+  estimatedWeeklyCost = 0,
+  dailySpending = {},
+}: DashboardCardsProps) {
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
 
-  const remaining = budget - spent
-  const hasSpend = spent > 0
+  const hasBudget = typeof budget === "number"
+  const remaining = hasBudget ? budget - spent : 0
+  const hasSpend = spent > 0 && hasBudget
 
   useEffect(() => {
     const fetchNutrition = async () => {
@@ -105,8 +112,12 @@ export default function DashboardCards({ budget = 150, spent = 0, priority, esti
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Budget remaining</p>
-            <p className="mt-2 text-4xl font-semibold text-teal-600">€{remaining.toFixed(2)}</p>
-            <p className="text-sm text-slate-500">of €{budget.toFixed(2)}</p>
+            <p className="mt-2 text-4xl font-semibold text-teal-600">
+              {hasBudget ? `€${remaining.toFixed(2)}` : "Loading..."}
+            </p>
+            <p className="text-sm text-slate-500">
+              {hasBudget ? `of €${budget?.toFixed(2)}` : "Fetching budget"}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-400">Spent this week</p>

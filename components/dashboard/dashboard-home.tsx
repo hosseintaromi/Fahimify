@@ -493,7 +493,8 @@ export default function DashboardHome() {
               <>
                 <h3 className="text-xl font-semibold text-slate-900">Generate Weekly Plan</h3>
                 <p className="text-sm text-slate-600">
-                  Your plan will be generated based on your preferences (Budget: €{profile.preferences?.budget ?? 150}).
+                  Your plan will be generated based on your preferences (Budget: €
+                  {profile.preferences?.budget ?? "…"}).
                 </p>
                 <Button
                   type="button"

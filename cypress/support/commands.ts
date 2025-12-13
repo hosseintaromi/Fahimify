@@ -34,8 +34,13 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("login", (identifier: string, password: string) => {
-  const username = identifier.includes("@") ? identifier.split("@")[0] : identifier;
+  const username = identifier.includes("@")
+    ? identifier.split("@")[0]
+    : identifier;
+  cy.clearCookies();
+  cy.clearLocalStorage();
   cy.visit("/login");
+  cy.get('input[id="login-username"]', { timeout: 15000 }).should("be.visible");
   cy.get('input[id="login-username"]').clear().type(username);
   cy.get('input[id="login-password"]').clear().type(password);
   cy.get('button[type="submit"]').click();
@@ -45,7 +50,7 @@ Cypress.Commands.add("login", (identifier: string, password: string) => {
 
 Cypress.Commands.add("completeOnboarding", (preferences: any) => {
   cy.contains("button", "Next", { timeout: 10000 }).should("be.visible");
-  
+
   cy.contains("button", "Next").click();
   cy.wait(1000);
 
@@ -82,6 +87,9 @@ Cypress.Commands.add("completeOnboarding", (preferences: any) => {
 
   cy.request("POST", "/api/onboarding", payload);
   cy.wait(500);
+  cy.request("/api/profile")
+    .its("body.preferences.budget")
+    .should("eq", payload.budget);
 });
 
 Cypress.Commands.add("generatePlan", () => {
